@@ -5,10 +5,11 @@ const { Server } = require('socket.io');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('./models/user'); // en minúscula
 const multer = require('multer');
-const upload = multer({ dest: 'public/uploads/' }); // Carpeta donde se guardan las imágenes
+const User = require('./models/user'); // en minúscula
 
+// Configuración de multer para subir avatars
+const upload = multer({ dest: 'public/uploads/' });
 
 const app = express();
 const server = http.createServer(app);
@@ -18,15 +19,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // Conexión a MongoDB
-mongoose.connect('mongodb+srv://jeruxo:cMD9Jc0BR1SGZLg8@cluster0.h1dg0y8.mongodb.net/chatGlobal?retryWrites=true&w=majority')
+mongoose.connect(
+  'mongodb+srv://jeruxo:cMD9Jc0BR1SGZLg8@cluster0.h1dg0y8.mongodb.net/chatGlobal?retryWrites=true&w=majority'
+)
   .then(() => console.log('MongoDB conectado'))
   .catch(err => console.error('Error conectando a MongoDB:', err));
 
-// --- Rutas de autenticación ---
-
 const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123'; // Cambia esto por algo seguro
 
-// Registro de usuario
+// --- Registro ---
 app.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -40,7 +41,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login de usuario
+// --- Login ---
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -50,13 +51,11 @@ app.post('/login', async (req, res) => {
   const isValid = await user.comparePassword(password);
   if (!isValid) return res.status(400).json({ error: 'Contraseña incorrecta' });
 
-  // Crear token JWT
   const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-
   res.json({ message: 'Login correcto', token });
 });
 
-// Middleware para autenticar con token
+// --- Middleware de autenticación ---
 const autenticar = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'No autenticado' });
@@ -70,17 +69,13 @@ const autenticar = (req, res, next) => {
   }
 };
 
-// --- Ruta para subir avatar ---
-const multer = require('multer');
-const upload = multer({ dest: 'public/uploads/' }); // carpeta para guardar imágenes
-
+// --- Subir avatar ---
 app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
   try {
     const userId = req.body.userId; // o extraído del token JWT
     const user = await User.findById(userId);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
-    // Guardar ruta de la imagen en el modelo
     user.avatar = '/uploads/' + req.file.filename;
     await user.save();
 
@@ -94,6 +89,7 @@ app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
 const mensajeSchema = new mongoose.Schema({
   usuario: String,
   texto: String,
+  avatar: String,
   fecha: { type: Date, default: Date.now }
 });
 
@@ -107,24 +103,19 @@ io.on('connection', (socket) => {
     socket.emit('cargar-mensajes', mensajes);
   });
 
-  // Cuando llega un mensaje nuevo
+  // Nuevo mensaje
   socket.on('nuevo-mensaje', async (data) => {
     const { usuario, texto, token } = data;
-
     if (!token) return;
 
     try {
-      // Validar token
       const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET);
-
-      // Obtener usuario de la base de datos para tener el avatar
       const user = await User.findById(decoded.id);
 
-      // Crear mensaje incluyendo avatar
       const mensaje = new Mensaje({
         usuario,
         texto,
-        avatar: user.avatar // aquí se guarda la foto de perfil
+        avatar: user.avatar
       });
 
       await mensaje.save();
@@ -135,6 +126,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Servidor
+// --- Servidor ---
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
