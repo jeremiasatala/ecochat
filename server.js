@@ -31,10 +31,8 @@ const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123'; // Cambia esto por algo seguro
 app.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = new User({ email, password });
     await user.save();
-
     res.json({ message: 'Usuario creado correctamente' });
   } catch (err) {
     res.status(400).json({ error: 'Email ya registrado o datos inválidos' });
@@ -44,7 +42,6 @@ app.post('/register', async (req, res) => {
 // --- Login ---
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
   const user = await User.findOne({ email });
   if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
@@ -53,6 +50,17 @@ app.post('/login', async (req, res) => {
 
   const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
   res.json({ message: 'Login correcto', token });
+});
+
+// --- Obtener usuario ---
+app.get('/user/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json({ email: user.email, avatar: user.avatar || '' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener usuario' });
+  }
 });
 
 // --- Middleware de autenticación ---
@@ -69,18 +77,28 @@ const autenticar = (req, res, next) => {
   }
 };
 
-// --- Subir avatar ---
+// --- Subir avatar y actualizar mensajes ---
 app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
   try {
-    const userId = req.body.userId; // o extraído del token JWT
+    const userId = req.body.userId;
     const user = await User.findById(userId);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
     user.avatar = '/uploads/' + req.file.filename;
     await user.save();
 
-    res.json({ message: 'Avatar subido', avatar: user.avatar });
+    // Actualizar todos los mensajes de este usuario
+    await Mensaje.updateMany(
+      { usuario: user.email },
+      { $set: { avatar: user.avatar } }
+    );
+
+    // Emitir evento a todos los clientes
+    io.emit('avatar-actualizado', { usuario: user.email, avatar: user.avatar });
+
+    res.json({ message: 'Avatar subido y mensajes actualizados', avatar: user.avatar });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Error al subir la imagen' });
   }
 });

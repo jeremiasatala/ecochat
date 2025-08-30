@@ -27,9 +27,9 @@ body {
 }
 
 .chat-panel {
-  position: relative;
   display: flex;
   flex-direction: column;
+  height: 100%;            /* ocupa todo el espacio del layout */
 }
 
 .profile-card {
@@ -275,4 +275,15 @@ button.danger { background: #d9534f; }
   font-size: 14px;
   background: transparent;
   padding: 8px 4px;
+}
+
+#chat {
+  flex: 1;                  /* ocupa todo el espacio vertical disponible */
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  overflow-y: auto;          /* activa scroll vertical */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
