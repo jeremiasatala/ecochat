@@ -32,6 +32,7 @@ body {
   height: 100%;            /* ocupa todo el espacio del layout */
 }
 
+/* Mantener perfil y demás elementos intactos */
 .profile-card {
   margin-bottom: 15px;
   text-align: center;
@@ -95,7 +96,6 @@ body {
 }
 
 .comment img { max-width: 50px; border-radius: 6px; }
-
 
 .comment img.avatar {
   width: 40px;
@@ -277,13 +277,21 @@ button.danger { background: #d9534f; }
   padding: 8px 4px;
 }
 
+/* ------------------- MODIFICACIONES PARA CHAT SCROLLEABLE ------------------- */
 #chat {
   flex: 1;                  /* ocupa todo el espacio vertical disponible */
   padding: 10px;
   background: #f9f9f9;
   border-radius: 8px;
-  overflow-y: auto;          /* activa scroll vertical */
+  overflow-y: auto;          /* scroll vertical */
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Asegurar que chat-panel mantiene altura y permite scroll */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
