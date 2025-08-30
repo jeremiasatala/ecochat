@@ -112,11 +112,17 @@ body {
 .comment.removing { animation: slideOutRight 0.3s forwards; }
 
 .comment-form {
-  display: flex; align-items: center; gap: 8px;
-  background: #fff; border: 1px solid #ddd;
-  border-radius: 40px; padding: 8px 12px;
+  flex: 0 0 auto;          /* no afecta la altura de #chat */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 40px;
+  padding: 8px 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
+
 .comment-form textarea {
   flex: 1; border: none; outline: none; resize: none;
   font-size: 14px; padding: 8px; max-height: 120px; overflow-y: auto;
@@ -278,12 +284,13 @@ button.danger { background: #d9534f; }
 }
 
 /* ------------------- MODIFICACIONES PARA CHAT SCROLLEABLE ------------------- */
+
 #chat {
-  flex: 1;                  /* ocupa todo el espacio vertical disponible */
+  flex: 1 1 auto;          /* ocupa el espacio disponible */
   padding: 10px;
   background: #f9f9f9;
   border-radius: 8px;
-  overflow-y: auto;          /* scroll vertical */
+  overflow-y: auto;        /* activa scroll vertical */
   display: flex;
   flex-direction: column;
   gap: 10px;
