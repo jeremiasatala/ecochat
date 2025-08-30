@@ -7,16 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
 
-  let userEmail = '';
-  let token = '';
-  let userId = '';
-  let userAvatar = '';
+  let userEmail = '';        // email real si está logueado
+  let token = '';            // token JWT si está logueado
+  let userId = '';           // id si está logueado
+  let userAvatar = '';       // avatar si está logueado
+  let guestName = '';        // nombre temporal de invitado
 
   // --- Funciones para mostrar mensajes ---
   function agregarMensaje(m) {
     const div = document.createElement('div');
     div.classList.add('comment');
-    div.dataset.usuario = m.usuario;
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
@@ -33,16 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // Escuchar mensajes
-  socket.on('cargar-mensajes', (mensajes) => mensajes.forEach(agregarMensaje));
-  socket.on('nuevo-mensaje', (m) => agregarMensaje(m));
-  socket.on('avatar-actualizado', ({ usuario, avatar }) => {
-    document.querySelectorAll('.comment').forEach(msg => {
-      if (msg.dataset.usuario === usuario) {
-        const img = msg.querySelector('img');
-        if (img) img.src = avatar;
-      }
-    });
+  // --- Cargar mensajes existentes ---
+  socket.on('cargar-mensajes', (mensajes) => {
+    mensajes.forEach(agregarMensaje);
+  });
+
+  // --- Nuevo mensaje ---
+  socket.on('nuevo-mensaje', (m) => {
+    agregarMensaje(m);
   });
 
   // --- Registro ---
@@ -100,13 +98,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const texto = mensajeInput.value.trim();
     if (!texto) return;
 
-    socket.emit('nuevo-mensaje', { usuario: userEmail, texto, token });
+    // Si no hay usuario logueado, creamos un invitado temporal
+    const usuario = userEmail || guestName || `Invitado${Math.floor(Math.random()*10000)}`;
+    if (!guestName && !userEmail) guestName = usuario;
+
+    socket.emit('nuevo-mensaje', {
+      usuario,
+      texto,
+      token // puede ser vacío para invitados
+    });
+
     mensajeInput.value = '';
     mensajeInput.focus();
   });
 
-  // --- Subir avatar ---
+  // --- Subir avatar (solo usuarios registrados) ---
   document.getElementById('subir-avatar').addEventListener('click', async () => {
+    if (!userId) return alert('Debes registrarte para subir un avatar.');
+
     const fileInput = document.getElementById('avatar');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen');
@@ -125,5 +134,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     alert(data.message);
   });
-
 });
