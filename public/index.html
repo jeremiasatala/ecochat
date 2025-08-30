@@ -2,40 +2,68 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Chat Global</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    #chat { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; margin-bottom: 10px; }
-    #chat div { margin-bottom: 5px; }
-    #auth input { margin: 3px 0; display: block; }
-    #auth button { margin-bottom: 10px; }
-  </style>
+  <title>EcoChat</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Chat Global</h1>
+  <div class="layout">
 
-  <div id="auth">
-    <h2>Registro</h2>
-    <input type="email" id="registerEmail" placeholder="Email">
-    <input type="password" id="registerPassword" placeholder="Contraseña">
-    <button id="registerBtn">Registrarse</button>
-    <input type="file" id="avatar">
-    <button id="subir-avatar">Subir foto</button>
+    <!-- Sidebar para registro/login -->
+    <div class="sidebar">
+      <div id="auth">
+        <h2>Registrarse</h2>
+        <input type="email" id="registerEmail" placeholder="Email">
+        <input type="password" id="registerPassword" placeholder="Contraseña">
+        <button id="registerBtn">Registrar</button>
 
+        <h2>Iniciar sesión</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Contraseña">
+        <button id="loginBtn">Login</button>
+      </div>
 
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Contraseña">
-    <button id="loginBtn">Iniciar sesión</button>
-  </div>
+      <!-- Perfil y subida de avatar -->
+      <div id="profile" class="hidden profile-form">
+        <h3>Perfil</h3>
+        <div class="file-upload">
+          <input type="file" id="avatar">
+          <button id="subir-avatar" class="upload-btn">Subir</button>
+        </div>
+        <img id="avatarPreview" class="upload-preview" src="assets/default-avatar.png" alt="Avatar">
+        <p id="userEmailDisplay"></p>
+      </div>
+    </div>
 
-  <div id="chatContainer" style="display:none;">
-    <div id="chat"></div>
-    <input type="text" id="mensaje" placeholder="Escribe un mensaje" required>
-    <button id="enviar">Enviar</button>
+    <!-- Chat principal -->
+    <div class="chat-panel" id="chatContainer" style="display:none;">
+      <div id="chat" class="comments"></div>
+
+      <div class="comment-form">
+        <textarea id="mensaje" placeholder="Escribe un mensaje..."></textarea>
+        <button id="enviar">Enviar</button>
+      </div>
+    </div>
+
+    <!-- Información o usuarios conectados -->
+    <div class="sidebar">
+      <h3>Usuarios</h3>
+      <div id="userList"></div>
+    </div>
+
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
+  <script>
+    // Previsualización de avatar
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    avatarInput.addEventListener('change', () => {
+      const file = avatarInput.files[0];
+      if (file) {
+        avatarPreview.src = URL.createObjectURL(file);
+      }
+    });
+  </script>
 </body>
 </html>

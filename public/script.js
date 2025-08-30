@@ -9,20 +9,36 @@ const loginBtn = document.getElementById('loginBtn');
 let userEmail = '';
 let token = '';
 let userId = ''; // Guarda el id del usuario después del login
+let userAvatar = ''; // Guarda el avatar del usuario después del login/subida
 
 // --- Funciones para mostrar mensajes ---
 function agregarMensaje(m) {
   const div = document.createElement('div');
+  div.classList.add('comment');
+
+  // Avatar del usuario
+  const avatarImg = document.createElement('img');
+  avatarImg.src = m.avatar || 'assets/default-avatar.png'; // Avatar por defecto
+  avatarImg.alt = m.usuario;
+  avatarImg.classList.add('avatar');
+
+  // Texto del mensaje
+  const contenido = document.createElement('div');
   const hora = new Date(m.fecha).toLocaleTimeString();
-  div.textContent = `[${hora}] ${m.usuario}: ${m.texto}`;
+  contenido.textContent = `[${hora}] ${m.usuario}: ${m.texto}`;
+
+  div.appendChild(avatarImg);
+  div.appendChild(contenido);
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
+// Cargar mensajes existentes
 socket.on('cargar-mensajes', (mensajes) => {
   mensajes.forEach(agregarMensaje);
 });
 
+// Nuevo mensaje
 socket.on('nuevo-mensaje', (m) => {
   agregarMensaje(m);
 });
@@ -64,6 +80,18 @@ loginBtn.addEventListener('click', async () => {
 
     document.getElementById('auth').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'block';
+    document.getElementById('profile').classList.remove('hidden');
+
+    // Mostrar email en perfil
+    document.getElementById('userEmailDisplay').textContent = userEmail;
+
+    // Obtener avatar del usuario desde backend si ya tiene
+    const userRes = await fetch(`/user/${userId}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const userData = await userRes.json();
+    userAvatar = userData.avatar || '';
+    if (userAvatar) document.getElementById('avatarPreview').src = userAvatar;
   } else {
     alert(data.error);
   }
@@ -84,7 +112,7 @@ enviarBtn.addEventListener('click', () => {
   mensajeInput.focus();
 });
 
-// --- Subir avatar --- <--- AQUI VA
+// --- Subir avatar ---
 document.getElementById('subir-avatar').addEventListener('click', async () => {
   const fileInput = document.getElementById('avatar');
   const file = fileInput.files[0];
@@ -92,12 +120,18 @@ document.getElementById('subir-avatar').addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('avatar', file);
-  formData.append('userId', userId); // identificamos al usuario con su id
+  formData.append('userId', userId);
 
   const res = await fetch('/upload-avatar', {
     method: 'POST',
     body: formData
   });
   const data = await res.json();
+
+  if (data.avatar) {
+    userAvatar = data.avatar;
+    document.getElementById('avatarPreview').src = userAvatar;
+  }
+
   alert(data.message);
 });
