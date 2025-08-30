@@ -83,23 +83,26 @@ io.on('connection', (socket) => {
     socket.emit('cargar-mensajes', mensajes);
   });
 
-socket.on('nuevo-mensaje', async (data) => {
-  const { usuario, texto, token } = data;
+  socket.on('nuevo-mensaje', async (data) => {
+    const { usuario, texto, token } = data;
 
-  if (!token) return;
+    if (!token) return;
 
-  try {
-    const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET); // Validar token
-    const mensaje = new Mensaje({
-      usuario,
-      texto
-    });
-    await mensaje.save();
-    io.emit('nuevo-mensaje', mensaje);
-  } catch (err) {
-    console.log('Token inválido, mensaje rechazado');
-  }
-});
+    try {
+      const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET); // Validar token
+      const mensaje = new Mensaje({
+        usuario,
+        texto
+      });
+      await mensaje.save();
+      io.emit('nuevo-mensaje', mensaje);
+    } catch (err) {
+      console.log('Token inválido, mensaje rechazado');
+    }
+  });
 
+}); // <- Cierre de io.on('connection')
+
+// Servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
