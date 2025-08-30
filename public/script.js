@@ -7,11 +7,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
 
-  let userEmail = '';        // email real si está logueado
-  let token = '';            // token JWT si está logueado
-  let userId = '';           // id si está logueado
-  let userAvatar = '';       // avatar si está logueado
-  let guestName = '';        // nombre temporal de invitado
+  let userEmail = '';
+  let token = '';
+  let userId = '';
+  let userAvatar = '';
+
+  // --- Función para eliminar mensaje del DOM ---
+  function eliminarMensaje(div) {
+    div.classList.add('removing');
+    setTimeout(() => {
+      if (div.parentNode) div.parentNode.removeChild(div);
+    }, 300); // coincide con la animación
+  }
+
+  // --- Función para mantener el scroll abajo ---
+  function scrollAbajo() {
+    chat.scrollTop = chat.scrollHeight;
+  }
 
   // --- Funciones para mostrar mensajes ---
   function agregarMensaje(m) {
@@ -30,15 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
     div.appendChild(avatarImg);
     div.appendChild(contenido);
     chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+
+    scrollAbajo(); // Mantener scroll abajo
+
+    // Eliminar mensaje después de 60 segundos
+    const ahora = new Date();
+    const fechaMensaje = new Date(m.fecha);
+    const tiempoRestante = Math.max(0, 60000 - (ahora - fechaMensaje));
+    setTimeout(() => eliminarMensaje(div), tiempoRestante);
   }
 
-  // --- Cargar mensajes existentes ---
+  // Cargar mensajes existentes
   socket.on('cargar-mensajes', (mensajes) => {
+    chat.innerHTML = ''; // Limpiar antes de renderizar
     mensajes.forEach(agregarMensaje);
+    scrollAbajo();
   });
 
-  // --- Nuevo mensaje ---
+  // Nuevo mensaje
   socket.on('nuevo-mensaje', (m) => {
     agregarMensaje(m);
   });
@@ -78,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
       userId = payload.id;
 
       document.getElementById('auth').style.display = 'none';
-      document.getElementById('chatContainer').style.display = 'block';
+      document.getElementById('chatContainer').style.display = 'flex';
       document.getElementById('profile').classList.remove('hidden');
       document.getElementById('userEmailDisplay').textContent = userEmail;
 
@@ -98,24 +119,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const texto = mensajeInput.value.trim();
     if (!texto) return;
 
-    // Si no hay usuario logueado, creamos un invitado temporal
-    const usuario = userEmail || guestName || `Invitado${Math.floor(Math.random()*10000)}`;
-    if (!guestName && !userEmail) guestName = usuario;
-
     socket.emit('nuevo-mensaje', {
-      usuario,
+      usuario: userEmail || 'Invitado',
       texto,
-      token // puede ser vacío para invitados
+      token
     });
 
     mensajeInput.value = '';
     mensajeInput.focus();
   });
 
-  // --- Subir avatar (solo usuarios registrados) ---
-  document.getElementById('subir-avatar').addEventListener('click', async () => {
-    if (!userId) return alert('Debes registrarte para subir un avatar.');
+  // También enviar mensaje al presionar Enter
+  mensajeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarBtn.click();
+    }
+  });
 
+  // --- Subir avatar ---
+  document.getElementById('subir-avatar').addEventListener('click', async () => {
     const fileInput = document.getElementById('avatar');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen');

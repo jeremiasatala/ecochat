@@ -20,19 +20,18 @@ body {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 15px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
 .chat-panel {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  height: 100%;            /* ocupa todo el espacio del layout */
+  height: 100%;
 }
 
-/* Mantener perfil y demás elementos intactos */
 .profile-card {
   margin-bottom: 15px;
   text-align: center;
@@ -59,7 +58,10 @@ body {
   object-fit: cover;
 }
 
-.profile-info { margin-top: 20px; padding: 10px; }
+.profile-info {
+  margin-top: 20px;
+  padding: 10px;
+}
 
 .social-links {
   display: flex;
@@ -70,18 +72,24 @@ body {
   margin-top: 8px;
 }
 
-.social-item { display: flex; align-items: center; gap: 6px; }
-.social-item i { font-size: 16px; color: #555; }
-.social-item a { color: #333; text-decoration: none; }
-.social-item a:hover { text-decoration: underline; }
+.social-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-#comments {
-  flex: 1;
-  overflow-x: hidden;
-  overflow-y: auto;
-  border-radius: 8px;
-  padding: 10px;
-  background: #f9f9f9;
+.social-item i {
+  font-size: 16px;
+  color: #555;
+}
+
+.social-item a {
+  color: #333;
+  text-decoration: none;
+}
+
+.social-item a:hover {
+  text-decoration: underline;
 }
 
 .comment {
@@ -95,7 +103,10 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.comment img { max-width: 50px; border-radius: 6px; }
+.comment img {
+  max-width: 50px;
+  border-radius: 6px;
+}
 
 .comment img.avatar {
   width: 40px;
@@ -112,7 +123,7 @@ body {
 .comment.removing { animation: slideOutRight 0.3s forwards; }
 
 .comment-form {
-  flex: 0 0 auto;          /* no afecta la altura de #chat */
+  flex: 0 0 auto; /* no afecta la altura de #chat */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -124,15 +135,31 @@ body {
 }
 
 .comment-form textarea {
-  flex: 1; border: none; outline: none; resize: none;
-  font-size: 14px; padding: 8px; max-height: 120px; overflow-y: auto;
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 14px;
+  padding: 8px;
+  max-height: 120px;
+  overflow-y: auto;
 }
+
 .comment-form input[type="file"] { display: none; }
 .comment-form label { cursor: pointer; font-size: 18px; color: #666; }
+
 .comment-form button {
-  background: #007BFF; color: white; border: none; border-radius: 50%;
-  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-  font-size: 18px; cursor: pointer;
+  background: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .tabs { display: flex; gap: 5px; }
@@ -283,8 +310,7 @@ button.danger { background: #d9534f; }
   padding: 8px 4px;
 }
 
-/* ------------------- MODIFICACIONES PARA CHAT SCROLLEABLE ------------------- */
-
+/* ------------------- CHAT SCROLLEABLE ------------------- */
 #chat {
   flex: 1 1 auto;          /* ocupa el espacio disponible */
   padding: 10px;
@@ -296,7 +322,6 @@ button.danger { background: #d9534f; }
   gap: 10px;
 }
 
-/* Asegurar que chat-panel mantiene altura y permite scroll */
 .chat-panel {
   display: flex;
   flex-direction: column;

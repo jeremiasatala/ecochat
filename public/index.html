@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <title>EcoChat</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Aseguramos que chat-panel sea un contenedor flex column completo */
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Contenedor scrollable para mensajes */
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Asegurar que el form de enviar mensajes no se expanda */
+    .comment-form {
+      flex-shrink: 0;
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -36,8 +62,10 @@
 
     <!-- Chat principal -->
     <div class="chat-panel" id="chatContainer" style="display:none;">
-      <div id="chat" class="comments"></div>
+      <!-- Mensajes scrollables -->
+      <div id="chat"></div>
 
+      <!-- Form de enviar mensaje -->
       <div class="comment-form">
         <textarea id="mensaje" placeholder="Escribe un mensaje..."></textarea>
         <button id="enviar">Enviar</button>
