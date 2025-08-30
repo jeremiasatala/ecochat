@@ -5,7 +5,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('./models/User'); // Modelo de usuario que creamos
+const User = require('./models/user'); // en minúscula
 
 const app = express();
 const server = http.createServer(app);
