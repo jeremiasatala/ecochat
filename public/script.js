@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const chat = document.getElementById('chat');
   const mensajeInput = document.getElementById('mensaje');
   const enviarBtn = document.getElementById('enviar');
+  const userList = document.getElementById('userList');
 
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
@@ -11,6 +12,33 @@ document.addEventListener('DOMContentLoaded', () => {
   let token = '';
   let userId = '';
   let userAvatar = '';
+
+  // --- Escuchar actualización de usuarios ---
+  socket.on('actualizar-usuarios', (usuarios) => {
+    userList.innerHTML = ''; // Limpiar lista
+    usuarios.forEach(u => {
+      const li = document.createElement('li');
+      li.style.display = 'flex';
+      li.style.alignItems = 'center';
+      li.style.gap = '8px';
+      li.style.marginBottom = '6px';
+
+      const avatarImg = document.createElement('img');
+      avatarImg.src = u.avatar || 'assets/default-avatar.png';
+      avatarImg.alt = u.email;
+      avatarImg.style.width = '30px';
+      avatarImg.style.height = '30px';
+      avatarImg.style.borderRadius = '50%';
+      avatarImg.style.objectFit = 'cover';
+
+      const span = document.createElement('span');
+      span.textContent = u.email;
+
+      li.appendChild(avatarImg);
+      li.appendChild(span);
+      userList.appendChild(li);
+    });
+  });
 
   // --- Función para eliminar mensaje del DOM ---
   function eliminarMensaje(div) {
