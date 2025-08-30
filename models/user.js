@@ -6,6 +6,12 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  avatar: { type: String, default: '' } // nuevo campo para la foto de perfil
+});
+
 // Antes de guardar, encriptar la contraseña
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();

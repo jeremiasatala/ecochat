@@ -8,6 +8,7 @@ const loginBtn = document.getElementById('loginBtn');
 
 let userEmail = '';
 let token = '';
+let userId = ''; // Guarda el id del usuario después del login
 
 // --- Funciones para mostrar mensajes ---
 function agregarMensaje(m) {
@@ -57,6 +58,10 @@ loginBtn.addEventListener('click', async () => {
     token = data.token;
     userEmail = email;
 
+    // Extraemos userId desde el token JWT
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    userId = payload.id;
+
     document.getElementById('auth').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'block';
   } else {
@@ -77,4 +82,22 @@ enviarBtn.addEventListener('click', () => {
 
   mensajeInput.value = '';
   mensajeInput.focus();
+});
+
+// --- Subir avatar --- <--- AQUI VA
+document.getElementById('subir-avatar').addEventListener('click', async () => {
+  const fileInput = document.getElementById('avatar');
+  const file = fileInput.files[0];
+  if (!file) return alert('Selecciona una imagen');
+
+  const formData = new FormData();
+  formData.append('avatar', file);
+  formData.append('userId', userId); // identificamos al usuario con su id
+
+  const res = await fetch('/upload-avatar', {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  alert(data.message);
 });

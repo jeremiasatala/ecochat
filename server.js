@@ -6,6 +6,9 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('./models/user'); // en minúscula
+const multer = require('multer');
+const upload = multer({ dest: 'public/uploads/' }); // Carpeta donde se guardan las imágenes
+
 
 const app = express();
 const server = http.createServer(app);
@@ -67,6 +70,26 @@ const autenticar = (req, res, next) => {
   }
 };
 
+// --- Ruta para subir avatar ---
+const multer = require('multer');
+const upload = multer({ dest: 'public/uploads/' }); // carpeta para guardar imágenes
+
+app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
+  try {
+    const userId = req.body.userId; // o extraído del token JWT
+    const user = await User.findById(userId);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    // Guardar ruta de la imagen en el modelo
+    user.avatar = '/uploads/' + req.file.filename;
+    await user.save();
+
+    res.json({ message: 'Avatar subido', avatar: user.avatar });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al subir la imagen' });
+  }
+});
+
 // --- Chat en tiempo real ---
 const mensajeSchema = new mongoose.Schema({
   usuario: String,
@@ -79,29 +102,38 @@ const Mensaje = mongoose.model('Mensaje', mensajeSchema);
 io.on('connection', (socket) => {
   console.log('Usuario conectado');
 
+  // Cargar últimos 100 mensajes
   Mensaje.find().sort({ fecha: 1 }).limit(100).then(mensajes => {
     socket.emit('cargar-mensajes', mensajes);
   });
 
+  // Cuando llega un mensaje nuevo
   socket.on('nuevo-mensaje', async (data) => {
     const { usuario, texto, token } = data;
 
     if (!token) return;
 
     try {
-      const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET); // Validar token
+      // Validar token
+      const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET);
+
+      // Obtener usuario de la base de datos para tener el avatar
+      const user = await User.findById(decoded.id);
+
+      // Crear mensaje incluyendo avatar
       const mensaje = new Mensaje({
         usuario,
-        texto
+        texto,
+        avatar: user.avatar // aquí se guarda la foto de perfil
       });
+
       await mensaje.save();
       io.emit('nuevo-mensaje', mensaje);
     } catch (err) {
       console.log('Token inválido, mensaje rechazado');
     }
   });
-
-}); // <- Cierre de io.on('connection')
+});
 
 // Servidor
 const PORT = process.env.PORT || 3000;
