@@ -12,30 +12,35 @@ document.addEventListener('DOMContentLoaded', () => {
   let token = '';
   let userId = '';
   let userAvatar = '';
+  let userCover = ''; // NUEVO: foto de portada del usuario
 
   // --- Escuchar actualización de usuarios ---
   socket.on('actualizar-usuarios', (usuarios) => {
     userList.innerHTML = ''; // Limpiar lista
     usuarios.forEach(u => {
       const li = document.createElement('li');
-      li.style.display = 'flex';
-      li.style.alignItems = 'center';
-      li.style.gap = '8px';
-      li.style.marginBottom = '6px';
 
+      // --- Cover Photo ---
+      const coverDiv = document.createElement('div');
+      coverDiv.classList.add('cover-photo');
+      coverDiv.style.backgroundImage = `url(${u.cover || 'assets/default-cover.png'})`;
+
+      // --- Avatar centrado ---
       const avatarImg = document.createElement('img');
       avatarImg.src = u.avatar || 'assets/default-avatar.png';
       avatarImg.alt = u.email;
-      avatarImg.style.width = '30px';
-      avatarImg.style.height = '30px';
-      avatarImg.style.borderRadius = '50%';
-      avatarImg.style.objectFit = 'cover';
+      avatarImg.classList.add('avatar');
+      coverDiv.appendChild(avatarImg);
 
-      const span = document.createElement('span');
-      span.textContent = u.email;
+      // --- Info (email o nombre) ---
+      const infoDiv = document.createElement('div');
+      infoDiv.classList.add('profile-info');
+      infoDiv.textContent = u.email;
 
-      li.appendChild(avatarImg);
-      li.appendChild(span);
+      // --- Añadir al li ---
+      li.appendChild(coverDiv);
+      li.appendChild(infoDiv);
+
       userList.appendChild(li);
     });
   });
@@ -136,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const userData = await userRes.json();
       userAvatar = userData.avatar || '';
+      userCover = userData.cover || ''; // NUEVO
       if (userAvatar) document.getElementById('avatarPreview').src = userAvatar;
     } else {
       alert(data.error);

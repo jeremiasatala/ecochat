@@ -29,7 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;   /* Para scroll vertical si hay muchos elementos */
+  overflow-y: auto;
 }
 
 .chat-panel {
@@ -47,58 +47,6 @@ body {
   background: #fafafa;
 }
 
-.cover-photo {
-  background: #ccc url("assets/example.png") center/cover no-repeat;
-  height: 120px;
-  position: relative;
-}
-
-.cover-photo img {
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  object-fit: cover;
-}
-
-.profile-info {
-  margin-top: 20px;
-  padding: 10px;
-}
-
-.social-links {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.social-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.social-item i {
-  font-size: 16px;
-  color: #555;
-}
-
-.social-item a {
-  color: #333;
-  text-decoration: none;
-}
-
-.social-item a:hover {
-  text-decoration: underline;
-}
-
 .comment {
   display: flex;
   align-items: center;
@@ -110,11 +58,6 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.comment img {
-  max-width: 50px;
-  border-radius: 6px;
-}
-
 .comment img.avatar {
   width: 40px;
   height: 40px;
@@ -123,14 +66,11 @@ body {
 }
 
 @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-@keyframes slideOutRight {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(50%); }
-}
+@keyframes slideOutRight { from {opacity:1; transform:translateX(0);} to {opacity:0; transform:translateX(50%);} }
 .comment.removing { animation: slideOutRight 0.3s forwards; }
 
 .comment-form {
-  flex: 0 0 auto; /* no afecta la altura de #chat */
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -152,9 +92,6 @@ body {
   overflow-y: auto;
 }
 
-.comment-form input[type="file"] { display: none; }
-.comment-form label { cursor: pointer; font-size: 18px; color: #666; }
-
 .comment-form button {
   background: #007BFF;
   color: white;
@@ -168,10 +105,6 @@ body {
   font-size: 18px;
   cursor: pointer;
 }
-
-.tabs { display: flex; gap: 5px; }
-.tab { flex: 1; padding: 10px; border: none; border-radius: 8px 8px 0 0; background: #eee; cursor: pointer; }
-.tab.active { background: #007BFF; color: white; }
 
 .profile-form {
   padding: 15px;
@@ -188,142 +121,62 @@ body {
 
 .hidden { display: none; }
 
-button { padding: 10px; border: none; border-radius: 8px; cursor: pointer; background: #007BFF; color: white; }
-button:hover { background: #0056b3; }
-button.danger { background: #d9534f; }
-
-#clearCommentsBtn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background: #d9534f;
-  color: white;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  cursor: pointer;
-  border: none;
-  transition: background 0.2s, transform 0.2s;
-  z-index: 9999;
-}
-
-.file-upload {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 8px 0;
-}
-
-.upload-preview {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid #ddd;
-}
-
-.upload-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.upload-btn {
-  background: #007bff;
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  display: inline-block;
-}
-
-.file-name {
-  font-size: 12px;
-  color: #555;
-}
-
-.message-box {
+#userList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-#message {
-  flex: 1;
-  border: none;
-  outline: none;
-  resize: none;
-  font-size: 14px;
-  padding: 8px;
-  max-height: 120px;
   overflow-y: auto;
-}
-
-#charCount {
-  text-align: right;
-  font-size: 12px;
-  color: #666;
-  margin-top: 2px;
-  padding-right: 4px;
-}
-
-.profile-form input[type="text"],
-.profile-form input[type="url"],
-.profile-form input[type="email"],
-.profile-form textarea {
-  width: 100%;
-  border: none;
-  outline: none;
-  padding: 10px 14px;
-  border-radius: 20px;
-  background: #fff;
-  font-size: 14px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
-}
-
-.profile-form input:focus,
-.profile-form textarea:focus {
-  box-shadow: 0 0 0 2px #007BFF;
-}
-
-.social-input {
+  max-height: calc(100vh - 60px);
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* NUEVO: estilos para cover + avatar centrado + info */
+#userList li {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+#userList li .cover-photo {
+  width: 100%;
+  height: 80px;
+  border-radius: 12px;
+  background: #ccc center/cover no-repeat;
+  position: relative;
+}
+
+#userList li .cover-photo img.avatar {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  object-fit: cover;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  padding: 6px 12px;
-  gap: 8px;
 }
 
-.social-input i {
-  font-size: 16px;
-  color: #555;
+#userList li .profile-info {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
 }
+/* FIN NUEVO */
 
-.social-input input {
-  border: none;
-  outline: none;
-  flex: 1;
-  font-size: 14px;
-  background: transparent;
-  padding: 8px 4px;
-}
-
-/* ------------------- CHAT SCROLLEABLE ------------------- */
 #chat {
-  flex: 1 1 auto;          /* ocupa el espacio disponible */
+  flex: 1 1 auto;
   padding: 10px;
   background: #f9f9f9;
   border-radius: 8px;
-  overflow-y: auto;        /* activa scroll vertical */
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -333,20 +186,4 @@ button.danger { background: #d9534f; }
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-#userList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1;             /* Que ocupe el espacio disponible */
-  overflow-y: auto;    /* Scroll interno si la lista es larga */
-  max-height: calc(100vh - 60px); /* Ajusta según encabezado/h3 */
-}
-
-#userList li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 0;
 }
