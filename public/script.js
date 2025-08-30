@@ -1,9 +1,15 @@
 const socket = io();
 const chat = document.getElementById('chat');
-const usuarioInput = document.getElementById('usuario');
 const mensajeInput = document.getElementById('mensaje');
 const enviarBtn = document.getElementById('enviar');
 
+const registerBtn = document.getElementById('registerBtn');
+const loginBtn = document.getElementById('loginBtn');
+
+let userEmail = '';
+let token = '';
+
+// --- Funciones para mostrar mensajes ---
 function agregarMensaje(m) {
   const div = document.createElement('div');
   const hora = new Date(m.fecha).toLocaleTimeString();
@@ -20,12 +26,55 @@ socket.on('nuevo-mensaje', (m) => {
   agregarMensaje(m);
 });
 
-enviarBtn.addEventListener('click', () => {
-  const usuario = usuarioInput.value.trim();
-  const texto = mensajeInput.value.trim();
-  if (!usuario || !texto) return;
+// --- Registro ---
+registerBtn.addEventListener('click', async () => {
+  const email = document.getElementById('registerEmail').value;
+  const password = document.getElementById('registerPassword').value;
 
-  socket.emit('nuevo-mensaje', { usuario, texto });
+  const res = await fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  alert(data.message || data.error);
+});
+
+// --- Login ---
+loginBtn.addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const res = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+  if (data.token) {
+    token = data.token;
+    userEmail = email;
+
+    document.getElementById('auth').style.display = 'none';
+    document.getElementById('chatContainer').style.display = 'block';
+  } else {
+    alert(data.error);
+  }
+});
+
+// --- Enviar mensaje ---
+enviarBtn.addEventListener('click', () => {
+  const texto = mensajeInput.value.trim();
+  if (!texto) return;
+
+  socket.emit('nuevo-mensaje', {
+    usuario: userEmail,
+    texto,
+    token
+  });
+
   mensajeInput.value = '';
   mensajeInput.focus();
 });
