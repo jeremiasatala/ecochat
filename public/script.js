@@ -1,13 +1,17 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const socket = io();
 
   const chat = document.getElementById('chat');
   const mensajeInput = document.getElementById('mensaje');
   const enviarBtn = document.getElementById('enviar');
   const userList = document.getElementById('userList');
+  const authSection = document.getElementById('auth');
+  const profileSection = document.getElementById('profile');
+  const chatPanel = document.querySelector('.chat-panel');
 
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn'); // Asegúrate de agregar este botón en tu HTML
 
   let username = '';
   let userEmail = '';
@@ -15,7 +19,103 @@ document.addEventListener('DOMContentLoaded', () => {
   let userId = '';
   let userAvatar = 'assets/default-avatar.png';
   let userCover = 'assets/default-cover.png';
-  let usersData = {}; // Almacenar datos de usuarios
+  let usersData = {};
+
+  // --- AUTO-LOGIN AL CARGAR LA PÁGINA ---
+  const savedToken = localStorage.getItem('ecochat_token');
+  const savedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+  
+  if (savedToken) {
+    try {
+      await autoLogin(savedToken, savedUser);
+    } catch (error) {
+      console.error('Error en auto-login:', error);
+      logout(); // Limpiar datos inválidos
+    }
+  }
+
+  // --- Función de Auto-Login ---
+  async function autoLogin(savedToken, savedUser) {
+    try {
+      // Verificar token con el servidor
+      const verifyRes = await fetch('/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: savedToken })
+      });
+
+      if (!verifyRes.ok) {
+        throw new Error('Token inválido');
+      }
+
+      const verifyData = await verifyRes.json();
+      
+      // Configurar variables de sesión
+      token = savedToken;
+      userId = verifyData.userId;
+      userEmail = verifyData.email;
+      username = verifyData.username || userEmail;
+      userAvatar = verifyData.avatar || 'assets/default-avatar.png';
+      userCover = verifyData.cover || 'assets/default-cover.png';
+
+      // Actualizar UI
+      authSection.style.display = 'none';
+      profileSection.classList.remove('hidden');
+      chatPanel.style.display = 'flex';
+      
+      document.getElementById('usernameDisplay').textContent = username;
+      document.getElementById('avatarPreview').src = userAvatar;
+      document.getElementById('coverPreview').src = userCover;
+
+      // Actualizar estado en socket
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover
+      });
+
+      console.log('Sesión restaurada automáticamente');
+
+    } catch (error) {
+      console.error('Error en auto-login:', error);
+      throw error;
+    }
+  }
+
+  // --- Función de Logout ---
+  function logout() {
+    // Limpiar variables
+    token = '';
+    userId = '';
+    userEmail = '';
+    username = '';
+    
+    // Limpiar localStorage
+    localStorage.removeItem('ecochat_token');
+    localStorage.removeItem('ecochat_user');
+    
+    // Resetear UI
+    authSection.style.display = 'block';
+    profileSection.classList.add('hidden');
+    chatPanel.style.display = 'none';
+    
+    // Resetear formularios
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    
+    // Desconectar socket y reconectar
+    socket.disconnect();
+    socket.connect();
+    
+    console.log('Sesión cerrada');
+  }
+
+  // --- Botón de Logout (debes agregarlo en tu HTML) ---
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', logout);
+  }
 
   // --- Manejar inputs modernos ---
   document.querySelectorAll('.modern-input').forEach(input => {
@@ -29,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Inicializar estado
     if (input.value) {
       input.parentElement.classList.add('focused');
     }
@@ -38,11 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Sistema de tabs ---
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      // Remover active de todos
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       
-      // Activar el clickeado
       btn.classList.add('active');
       document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
     });
@@ -67,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('actualizar-usuarios', (usuarios = []) => {
     userList.innerHTML = '';
     usuarios.forEach(u => {
-      // Guardar datos del usuario
       const userKey = u.usuario || u.email;
       usersData[userKey] = u;
       
@@ -82,7 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
       li.style.padding = '6px';
       li.style.cursor = 'pointer';
 
-      // Hacer clickeable el usuario
       li.addEventListener('click', () => {
         inspeccionarPerfil(userKey);
       });
@@ -144,7 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
     div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
     div.style.cursor = 'pointer';
 
-    // Hacer el mensaje clickeable para inspeccionar perfil
     div.addEventListener('click', () => {
       inspeccionarPerfil(m.usuario || m.email);
     });
@@ -187,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = usersData[usernameOrEmail];
     
     if (user) {
-      // Llenar el inspector con datos
       document.getElementById('inspector-username').textContent = user.username || user.usuario || user.email;
       document.getElementById('inspector-email').textContent = user.email || 'No disponible';
       document.getElementById('inspector-avatar').src = user.avatar || 'assets/default-avatar.png';
@@ -195,7 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('inspector-messages').textContent = user.messageCount || '0';
       document.getElementById('inspector-lastseen').textContent = 'En línea';
       
-      // Cambiar a la pestaña de perfil
       document.querySelector('[data-tab="profile"]').click();
     } else {
       alert('No se encontró información del usuario');
@@ -255,6 +347,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (data.token) {
+        // Guardar en localStorage
+        localStorage.setItem('ecochat_token', data.token);
+        localStorage.setItem('ecochat_user', JSON.stringify(data.user));
+
         token = data.token;
         userEmail = email;
 
@@ -267,9 +363,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // UI
-        document.getElementById('auth').style.display = 'none';
-        document.getElementById('profile').classList.remove('hidden');
-        document.querySelector('.chat-panel').style.display = 'flex';
+        authSection.style.display = 'none';
+        profileSection.classList.remove('hidden');
+        chatPanel.style.display = 'flex';
         document.getElementById('usernameDisplay').textContent = username;
 
         // obtener datos usuario
@@ -347,6 +443,11 @@ document.addEventListener('DOMContentLoaded', () => {
         userAvatar = data.avatar;
         document.getElementById('avatarPreview').src = userAvatar;
 
+        // Actualizar localStorage
+        const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+        updatedUser.avatar = userAvatar;
+        localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
@@ -379,6 +480,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.cover) {
         userCover = data.cover;
         document.getElementById('coverPreview').src = userCover;
+
+        // Actualizar localStorage
+        const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+        updatedUser.cover = userCover;
+        localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
 
         socket.emit('actualizar-estado', {
           id: userId,
