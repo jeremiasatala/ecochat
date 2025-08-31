@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatar = document.createElement('img');
       avatar.src = u.avatar || 'assets/default-avatar.png';
-      avatar.alt = u.username || u.email || 'Invitado';
+      avatar.alt = u.username || u.email;
       avatar.style.width = '48px';
       avatar.style.height = '48px';
       avatar.style.borderRadius = '50%';
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       info.style.marginTop = '26px';
       info.style.textAlign = 'center';
       info.style.fontSize = '13px';
-      info.textContent = u.username || u.email || 'Invitado';
+      info.textContent = u.username || u.email;
 
       li.appendChild(coverDiv);
       li.appendChild(info);
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
-    avatarImg.alt = m.username || m.usuario || 'Invitado';
+    avatarImg.alt = m.username || m.usuario || m.email || '';
     avatarImg.style.width = '40px';
     avatarImg.style.height = '40px';
     avatarImg.style.borderRadius = '50%';
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const who = document.createElement('div');
     who.style.fontSize = '13px';
     who.style.fontWeight = '600';
-    who.textContent = `${m.username || m.usuario} • ${hora}`;
+    who.textContent = `${m.username || m.usuario || m.email} • ${hora}`;
     const text = document.createElement('div');
     text.style.marginTop = '4px';
     text.textContent = m.texto;
@@ -211,10 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('avatarPreview').src = userAvatar;
         document.getElementById('coverPreview').src = userCover;
 
+        // actualizar estado en socket con username real
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
-          username,
+          username,      // <-- asegurarse de usar el username real
           avatar: userAvatar,
           cover: userCover
         });
@@ -234,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
 
     socket.emit('nuevo-mensaje', {
-      usuario: userEmail || 'Invitado',
-      username: username || userEmail || 'Invitado',
+      usuario: userEmail || '',
+      username: username || userEmail || '',
       texto,
       avatar: userAvatar,
       cover: userCover,
