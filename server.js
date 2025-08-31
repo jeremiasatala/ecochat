@@ -6,15 +6,50 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
+const fs = require('fs'); // ← AÑADIDO
 const User = require('./models/user');
 
-const upload = multer({ dest: 'public/uploads/' });
+// Asegurar que la carpeta de uploads existe
+const uploadsDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Carpeta uploads creada:', uploadsDir);
+}
+
+// Configuración mejorada de Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Nombre único para evitar conflictos
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB límite
+  },
+  fileFilter: function (req, file, cb) {
+    // Solo permitir imágenes
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo se permiten imágenes'), false);
+    }
+  }
+});
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Servir archivos estáticos CORRECTAMENTE
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(uploadsDir)); // ← ¡IMPORTANTE!
 app.use(express.json());
 
 mongoose.connect(
@@ -187,15 +222,21 @@ const mensajeSchema = new mongoose.Schema({
 
 const Mensaje = mongoose.model('Mensaje', mensajeSchema);
 
-// Subir avatar
+// Subir avatar - VERSIÓN CORREGIDA
 app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
+    // Ruta relativa para el frontend
     user.avatar = '/uploads/' + req.file.filename;
     await user.save();
 
+    // Actualizar mensajes existentes
     await Mensaje.updateMany(
       { usuario: user.username || user.email },
       { $set: { avatar: user.avatar } }
@@ -207,18 +248,31 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
     });
 
     res.json({ 
-      message: 'Avatar subido y mensajes actualizados', 
+      message: 'Avatar subido correctamente', 
       avatar: user.avatar 
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al subir la imagen' });
+    console.error('Error en upload-avatar:', err);
+    
+    // Eliminar archivo si hubo error
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ 
+      error: err.message || 'Error al subir el avatar' 
+    });
   }
 });
 
-// Subir cover
+// Subir cover - VERSIÓN CORREGIDA
 app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
@@ -231,12 +285,21 @@ app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) =
     });
 
     res.json({ 
-      message: 'Cover subido correctamente', 
+      message: 'Portada subida correctamente', 
       cover: user.cover 
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al subir la imagen' });
+    console.error('Error en upload-cover:', err);
+    
+    // Eliminar archivo si hubo error
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ 
+      error: err.message || 'Error al subir la portada' 
+    });
   }
 });
 
