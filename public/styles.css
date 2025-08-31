@@ -1,194 +1,196 @@
-/* Estilos modernos para formularios */
-.input-group {
-  position: relative;
-  margin-bottom: 20px;
+/* Layout principal - RESTAURAR */
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 250px;
+  gap: 20px;
+  padding: 20px;
+  height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.modern-input {
-  width: 100%;
-  padding: 16px;
-  border: 2px solid #e1e5e9;
-  border-radius: 12px;
+/* Sidebars */
+.sidebar {
   background: #fff;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  outline: none;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
-.modern-input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
-
-.modern-input:focus + label,
-.modern-input:not(:placeholder-shown) + label {
-  top: -8px;
-  left: 12px;
-  font-size: 12px;
-  background: #fff;
-  padding: 0 8px;
-  color: #007bff;
-}
-
-.input-group label {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  font-size: 16px;
-  color: #6c757d;
-  pointer-events: none;
-  transition: all 0.3s ease;
-}
-
-.modern-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 12px;
-}
-
-.modern-btn.primary {
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: white;
-}
-
-.modern-btn.primary:hover {
-  background: linear-gradient(135deg, #0056b3, #004085);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-}
-
-.modern-btn.secondary {
-  background: linear-gradient(135deg, #28a745, #1e7e34);
-  color: white;
-}
-
-.modern-btn.secondary:hover {
-  background: linear-gradient(135deg, #1e7e34, #145a23);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-}
-
-.modern-btn.outline {
-  background: transparent;
-  border: 2px solid #007bff;
-  color: #007bff;
-}
-
-.modern-btn.outline:hover {
-  background: #007bff;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.modern-btn.small {
-  padding: 8px 16px;
-  font-size: 14px;
-  width: auto;
-}
-
-.divider {
+.sidebar-left {
   display: flex;
-  align-items: center;
-  margin: 20px 0;
-  color: #6c757d;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.divider::before,
-.divider::after {
-  content: "";
+/* Chat central */
+.chat-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+}
+
+#chat {
   flex: 1;
-  height: 1px;
-  background: #e1e5e9;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: #f8f9fa;
 }
 
-.divider span {
-  padding: 0 12px;
-  font-size: 14px;
-}
-
-.file-upload-group {
-  margin-bottom: 20px;
-}
-
-.file-upload-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
-}
-
-.file-input-container {
+/* Logo */
+.logo {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 20px;
 }
 
-.file-input {
-  display: none;
+.logo-img {
+  width: 40px;
+  height: 40px;
 }
 
-.file-input-label {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: #f8f9fa;
-  border: 2px dashed #dee2e6;
+.logo h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Perfil */
+#profile-card {
+  background: #fff;
   border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.file-input-label:hover {
-  border-color: #007bff;
-  background: #e7f3ff;
+.cover-photo img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
 }
 
-.file-input-text {
-  flex: 1;
+.avatar-container {
+  margin-top: -40px;
+  text-align: center;
+}
+
+.avatar-container img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  object-fit: cover;
+  background: #fff;
+}
+
+.profile-info {
+  padding: 20px;
+  text-align: center;
+}
+
+.profile-info h3 {
+  margin: 10px 0 5px 0;
+  color: #2c3e50;
+}
+
+.stats {
   color: #6c757d;
+  margin: 10px 0;
+}
+
+/* Formulario de comentarios */
+.comment-form {
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.comment-form textarea {
+  width: 100%;
+  resize: none;
+  padding: 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  height: 80px;
   font-size: 14px;
 }
 
-.file-input-button {
-  background: #007bff;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+.comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.send-btn:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: scale(1.05);
+}
+
+/* Lista de usuarios */
+#userList {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0 0 0;
+}
+
+#userList li {
+  margin-bottom: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #28a745;
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 250px 1fr 200px;
+    gap: 15px;
+    padding: 15px;
+  }
+}
+
 @media (max-width: 768px) {
-  .file-input-container {
-    flex-direction: column;
-    align-items: stretch;
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
   }
   
-  .modern-btn.small {
-    width: 100%;
+  .sidebar {
+    height: auto;
+    margin-bottom: 15px;
+  }
+  
+  .chat-panel {
+    height: 500px;
   }
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Asegurar que el auth y profile se vean bien */
+#auth, #profile {
+  display: block;
 }
 
-.input-group, .modern-btn, .file-upload-group {
-  animation: fadeIn 0.3s ease;
+.hidden {
+  display: none !important;
 }
