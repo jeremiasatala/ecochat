@@ -82,11 +82,11 @@ const autenticar = (req, res, next) => {
   }
 };
 
-// Registro
+// Registro - MODIFICADO
 app.post('/register', async (req, res) => {
   try {
-    const { email, password, username } = req.body;
-    const user = new User({ email, password, username });
+    const { email, password, username } = req.body; // ← Añadir username
+    const user = new User({ email, password, username }); // ← Pasar username
     await user.save();
     res.json({ message: 'Usuario creado correctamente' });
   } catch (err) {
@@ -94,7 +94,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login
+// Login - MEJORADO
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -107,7 +107,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ 
       id: user._id, 
       email: user.email 
-    }, JWT_SECRET, { expiresIn: '7d' }); // Sesión de 7 días
+    }, JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
       message: 'Login correcto',
@@ -115,7 +115,7 @@ app.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        username: user.username || '',
+        username: user.username || '', // ← Asegurar que envía username
         avatar: user.avatar || '/assets/default-avatar.png',
         cover: user.cover || '/assets/default-cover.png'
       }
@@ -125,7 +125,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Verificar token (para auto-login)
+// Verificar token - MEJORADO
 app.post('/verify-token', async (req, res) => {
   try {
     const { token } = req.body;
@@ -141,7 +141,7 @@ app.post('/verify-token', async (req, res) => {
       valid: true,
       userId: user._id,
       email: user.email,
-      username: user.username || '',
+      username: user.username || '', // ← Añadir username
       avatar: user.avatar || '/assets/default-avatar.png',
       cover: user.cover || '/assets/default-cover.png'
     });

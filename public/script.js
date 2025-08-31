@@ -5,13 +5,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const mensajeInput = document.getElementById('mensaje');
   const enviarBtn = document.getElementById('enviar');
   const userList = document.getElementById('userList');
-  const authSection = document.getElementById('auth');
-  const profileSection = document.getElementById('profile');
-  const chatPanel = document.querySelector('.chat-panel');
+  
+  // Nuevos elementos de la interfaz
+  const authButtons = document.getElementById('auth-buttons');
+  const authForms = document.getElementById('auth-forms');
+  const profileActions = document.getElementById('profile-actions');
+  const profileEdit = document.getElementById('profile-edit');
+  const showLoginBtn = document.getElementById('showLoginBtn');
+  const showRegisterBtn = document.getElementById('showRegisterBtn');
+  const cancelLoginBtn = document.getElementById('cancelLoginBtn');
+  const cancelRegisterBtn = document.getElementById('cancelRegisterBtn');
 
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn'); // Asegúrate de agregar este botón en tu HTML
+  const logoutBtn = document.getElementById('logoutBtn');
+  const editProfileBtn = document.getElementById('editProfileBtn');
 
   let username = '';
   let userEmail = '';
@@ -20,6 +28,53 @@ document.addEventListener('DOMContentLoaded', async () => {
   let userAvatar = 'assets/default-avatar.png';
   let userCover = 'assets/default-cover.png';
   let usersData = {};
+
+  // --- FUNCIONES DE INTERFAZ ---
+  function showLoginForm() {
+    authButtons.classList.add('hidden');
+    authForms.classList.remove('hidden');
+    // Mostrar solo el formulario de login
+    document.querySelectorAll('.form-section').forEach(form => {
+      form.style.display = 'none';
+    });
+    document.querySelectorAll('.form-section')[1].style.display = 'block'; // Login form
+  }
+
+  function showRegisterForm() {
+    authButtons.classList.add('hidden');
+    authForms.classList.remove('hidden');
+    // Mostrar solo el formulario de registro
+    document.querySelectorAll('.form-section').forEach(form => {
+      form.style.display = 'none';
+    });
+    document.querySelectorAll('.form-section')[0].style.display = 'block'; // Register form
+  }
+
+  function hideAuthForms() {
+    authForms.classList.add('hidden');
+    authButtons.classList.remove('hidden');
+    // Limpiar formularios
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('registerEmail').value = '';
+    document.getElementById('registerPassword').value = '';
+    document.getElementById('registerUsername').value = '';
+  }
+
+  function showProfileEdit() {
+    profileEdit.classList.remove('hidden');
+  }
+
+  function hideProfileEdit() {
+    profileEdit.classList.add('hidden');
+  }
+
+  // --- Event listeners para los nuevos botones ---
+  showLoginBtn?.addEventListener('click', showLoginForm);
+  showRegisterBtn?.addEventListener('click', showRegisterForm);
+  cancelLoginBtn?.addEventListener('click', hideAuthForms);
+  cancelRegisterBtn?.addEventListener('click', hideAuthForms);
+  editProfileBtn?.addEventListener('click', showProfileEdit);
 
   // --- AUTO-LOGIN AL CARGAR LA PÁGINA ---
   const savedToken = localStorage.getItem('ecochat_token');
@@ -59,9 +114,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       userCover = verifyData.cover || 'assets/default-cover.png';
 
       // Actualizar UI
-      authSection.style.display = 'none';
-      profileSection.classList.remove('hidden');
-      chatPanel.style.display = 'flex';
+      authButtons.classList.add('hidden');
+      authForms.classList.add('hidden');
+      profileActions.classList.remove('hidden');
+      profileEdit.classList.add('hidden');
       
       document.getElementById('usernameDisplay').textContent = username;
       document.getElementById('avatarPreview').src = userAvatar;
@@ -97,13 +153,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     localStorage.removeItem('ecochat_user');
     
     // Resetear UI
-    authSection.style.display = 'block';
-    profileSection.classList.add('hidden');
-    chatPanel.style.display = 'none';
+    authButtons.classList.remove('hidden');
+    authForms.classList.add('hidden');
+    profileActions.classList.add('hidden');
+    profileEdit.classList.add('hidden');
+    
+    // Resetear perfil a invitado
+    document.getElementById('usernameDisplay').textContent = 'Invitado';
+    document.getElementById('avatarPreview').src = 'assets/default-avatar.png';
+    document.getElementById('coverPreview').src = 'assets/default-cover.png';
     
     // Resetear formularios
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
+    document.getElementById('registerEmail').value = '';
+    document.getElementById('registerPassword').value = '';
+    document.getElementById('registerUsername').value = '';
+    document.getElementById('editUsername').value = '';
     
     // Desconectar socket y reconectar
     socket.disconnect();
@@ -112,13 +178,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Sesión cerrada');
   }
 
-  // --- Botón de Logout (debes agregarlo en tu HTML) ---
+  // --- Botón de Logout ---
   if (logoutBtn) {
     logoutBtn.addEventListener('click', logout);
   }
 
   // --- Manejar inputs modernos ---
-  document.querySelectorAll('.modern-input').forEach(input => {
+  document.querySelectorAll('.input-modern').forEach(input => {
     input.addEventListener('focus', () => {
       input.parentElement.classList.add('focused');
     });
@@ -129,6 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
+    // Inicializar estado
     if (input.value) {
       input.parentElement.classList.add('focused');
     }
@@ -323,7 +390,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       const data = await res.json();
       if (res.ok) {
-        alert('Registrado. Iniciá sesión.');
+        alert('Registrado. Ahora puedes iniciar sesión.');
+        hideAuthForms();
       } else {
         alert(data.error || 'Error al registrar');
       }
@@ -362,10 +430,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           console.warn('No se pudo extraer userId del token', e);
         }
 
-        // UI
-        authSection.style.display = 'none';
-        profileSection.classList.remove('hidden');
-        chatPanel.style.display = 'flex';
+        // Actualizar UI
+        authButtons.classList.add('hidden');
+        authForms.classList.add('hidden');
+        profileActions.classList.remove('hidden');
+        
         document.getElementById('usernameDisplay').textContent = username;
 
         // obtener datos usuario
@@ -406,8 +475,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
 
     socket.emit('nuevo-mensaje', {
-      usuario: userEmail || '',
-      username: username || userEmail || '',
+      usuario: userEmail || 'Invitado',
+      username: username || 'Invitado',
       texto,
       avatar: userAvatar,
       cover: userCover,
@@ -434,7 +503,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const formData = new FormData();
     formData.append('avatar', file);
-    // NO enviar userId, el middleware autenticar ya obtiene el usuario del token
 
     try {
       const res = await fetch('/upload-avatar', {
@@ -475,17 +543,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = document.getElementById('cover');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen de portada');
-    if (!token) return alert('Inicia sesión para subir portada'); // ← Cambiado de userId a token
+    if (!token) return alert('Inicia sesión para subir portada');
 
     const formData = new FormData();
     formData.append('cover', file);
-    // NO enviar userId, el middleware autenticar ya obtiene el usuario del token
 
     try {
       const res = await fetch('/upload-cover', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + token // ← Añadir header de autorización
+          'Authorization': 'Bearer ' + token
         },
         body: formData
       });

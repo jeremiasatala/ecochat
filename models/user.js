@@ -4,9 +4,9 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  username: { type: String, unique: true, sparse: true }, // NUEVO
+  username: { type: String, unique: true, sparse: true }, // ← Debe existir
   avatar: { type: String, default: '/assets/default-avatar.png' },
-  cover: { type: String, default: '' }
+  cover: { type: String, default: '/assets/default-cover.png' }
 });
 
 
