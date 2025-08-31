@@ -321,4 +321,16 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Error subiendo cover');
     }
   });
+
+  // Agregar funcionalidad a los emojis
+  const emojiBar = document.getElementById('emojiBar');
+  const mensajeInput = document.getElementById('mensaje');
+    emojiBar.addEventListener('click', (e) => {
+    if(e.target.classList.contains('emoji')){
+      mensajeInput.value += e.target.textContent;
+      mensajeInput.focus();
+      // actualizar contador de caracteres si lo tienes
+      document.getElementById('charCount').textContent = `${mensajeInput.value.length}/200`;
+    }
+  });
 });
