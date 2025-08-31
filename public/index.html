@@ -8,58 +8,15 @@
 <body>
   <div class="layout">
 
-    <!-- Sidebar izquierda: auth (visible cuando no logueado) y perfil -->
+    <!-- Sidebar izquierda: perfil siempre visible -->
     <aside class="sidebar-left sidebar">
       <div class="logo">
         <img src="assets/logo.png" alt="EcoChat" class="logo-img">
         <h2>EcoChat</h2>
       </div>
 
-      <!-- AUTH (mostrar por defecto) -->
-      <div id="auth">
-        <!-- Registro -->
-        <div class="form-section">
-          <h3>Registrarse</h3>
-          <div class="input-group-modern">
-            <input id="registerUsername" type="text" class="input-modern" placeholder=" ">
-            <label class="input-label">Nombre de usuario</label>
-          </div>
-          <div class="input-group-modern">
-            <input id="registerEmail" type="email" class="input-modern" placeholder=" ">
-            <label class="input-label">Email</label>
-          </div>
-          <div class="input-group-modern">
-            <input id="registerPassword" type="password" class="input-modern" placeholder=" ">
-            <label class="input-label">Contraseña</label>
-          </div>
-          <button id="registerBtn" class="btn-modern btn-primary-modern">
-            <span>📝</span> Crear cuenta
-          </button>
-        </div>
-
-        <div class="divider-modern">
-          <span>o</span>
-        </div>
-
-        <!-- Login -->
-        <div class="form-section">
-          <h3>Iniciar sesión</h3>
-          <div class="input-group-modern">
-            <input id="loginEmail" type="email" class="input-modern" placeholder=" ">
-            <label class="input-label">Email</label>
-          </div>
-          <div class="input-group-modern">
-            <input id="loginPassword" type="password" class="input-modern" placeholder=" ">
-            <label class="input-label">Contraseña</label>
-          </div>
-          <button id="loginBtn" class="btn-modern btn-secondary-modern">
-            <span>🔑</span> Ingresar
-          </button>
-        </div>
-      </div>
-
-      <!-- Perfil (oculto hasta login) -->
-      <div id="profile" class="hidden">
+      <!-- Perfil de Invitado (siempre visible) -->
+      <div id="profile">
         <div id="profile-card">
           <div class="cover-photo">
             <img id="coverPreview" src="assets/default-cover.png" alt="Portada">
@@ -73,55 +30,121 @@
             <h3 id="usernameDisplay">Invitado</h3>
             <p id="bio">Bienvenido a EcoChat</p>
             <p class="stats">Mensajes enviados: <span id="messageCount">0</span></p>
-            <button id="editProfileBtn" class="btn-modern btn-outline-modern">
-              <span>✏️</span> Editar Perfil
+            
+            <!-- Botones de auth (visibles cuando no logueado) -->
+            <div id="auth-buttons">
+              <button id="showLoginBtn" class="btn-modern btn-primary-modern">
+                <span>🔑</span> Iniciar Sesión
+              </button>
+              <button id="showRegisterBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px;">
+                <span>📝</span> Registrarse
+              </button>
+            </div>
+            
+            <!-- Botones de perfil (ocultos hasta login) -->
+            <div id="profile-actions" class="hidden">
+              <button id="editProfileBtn" class="btn-modern btn-outline-modern">
+                <span>✏️</span> Editar Perfil
+              </button>
+              <button id="logoutBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px; background: #dc3545; border-color: #dc3545; color: white;">
+                <span>🚪</span> Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formularios de auth (ocultos inicialmente) -->
+        <div id="auth-forms" class="hidden">
+          <!-- Registro -->
+          <div class="form-section">
+            <h3>Registrarse</h3>
+            <div class="input-group-modern">
+              <input id="registerUsername" type="text" class="input-modern" placeholder=" ">
+              <label class="input-label">Nombre de usuario</label>
+            </div>
+            <div class="input-group-modern">
+              <input id="registerEmail" type="email" class="input-modern" placeholder=" ">
+              <label class="input-label">Email</label>
+            </div>
+            <div class="input-group-modern">
+              <input id="registerPassword" type="password" class="input-modern" placeholder=" ">
+              <label class="input-label">Contraseña</label>
+            </div>
+            <button id="registerBtn" class="btn-modern btn-primary-modern">
+              <span>📝</span> Crear cuenta
             </button>
-            <button id="logoutBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px; background: #dc3545; border-color: #dc3545; color: white;">
-              <span>🚪</span> Cerrar Sesión
+            <button id="cancelRegisterBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px;">
+              <span>↩️</span> Cancelar
+            </button>
+          </div>
+
+          <div class="divider-modern">
+            <span>o</span>
+          </div>
+
+          <!-- Login -->
+          <div class="form-section">
+            <h3>Iniciar sesión</h3>
+            <div class="input-group-modern">
+              <input id="loginEmail" type="email" class="input-modern" placeholder=" ">
+              <label class="input-label">Email</label>
+            </div>
+            <div class="input-group-modern">
+              <input id="loginPassword" type="password" class="input-modern" placeholder=" ">
+              <label class="input-label">Contraseña</label>
+            </div>
+            <button id="loginBtn" class="btn-modern btn-secondary-modern">
+              <span>🔑</span> Ingresar
+            </button>
+            <button id="cancelLoginBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px;">
+              <span>↩️</span> Cancelar
             </button>
           </div>
         </div>
 
-        <div class="divider-modern">
-          <span>Editar información</span>
-        </div>
-
-        <div class="form-section">
-          <div class="input-group-modern">
-            <input id="editUsername" type="text" class="input-modern" placeholder=" ">
-            <label class="input-label">Nombre de usuario</label>
+        <!-- Edición de perfil (oculto hasta login) -->
+        <div id="profile-edit" class="hidden">
+          <div class="divider-modern">
+            <span>Editar información</span>
           </div>
 
-          <!-- Avatar Upload Moderno -->
-          <div class="upload-modern" onclick="document.getElementById('avatar').click()">
-            <div class="upload-icon">📁</div>
-            <div class="upload-text">Haz clic o arrastra una imagen para avatar</div>
-            <div class="upload-subtext">PNG, JPG hasta 5MB</div>
-            <input id="avatar" type="file" accept="image/*" style="display: none;">
-          </div>
-          <div class="upload-actions">
-            <button id="subir-avatar" class="btn-modern btn-small-modern btn-primary-modern">
-              <span>⬆️</span> Subir avatar
-            </button>
-          </div>
+          <div class="form-section">
+            <div class="input-group-modern">
+              <input id="editUsername" type="text" class="input-modern" placeholder=" ">
+              <label class="input-label">Nombre de usuario</label>
+            </div>
 
-          <!-- Cover Upload Moderno -->
-          <div class="upload-modern" onclick="document.getElementById('cover').click()" style="margin-top: 20px;">
-            <div class="upload-icon">🖼️</div>
-            <div class="upload-text">Haz clic o arrastra una imagen para portada</div>
-            <div class="upload-subtext">PNG, JPG hasta 5MB</div>
-            <input id="cover" type="file" accept="image/*" style="display: none;">
-          </div>
-          <div class="upload-actions">
-            <button id="subir-cover" class="btn-modern btn-small-modern btn-primary-modern">
-              <span>⬆️</span> Subir portada
-            </button>
+            <!-- Avatar Upload Moderno -->
+            <div class="upload-modern" onclick="document.getElementById('avatar').click()">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">Haz clic o arrastra una imagen para avatar</div>
+              <div class="upload-subtext">PNG, JPG hasta 5MB</div>
+              <input id="avatar" type="file" accept="image/*" style="display: none;">
+            </div>
+            <div class="upload-actions">
+              <button id="subir-avatar" class="btn-modern btn-small-modern btn-primary-modern">
+                <span>⬆️</span> Subir avatar
+              </button>
+            </div>
+
+            <!-- Cover Upload Moderno -->
+            <div class="upload-modern" onclick="document.getElementById('cover').click()" style="margin-top: 20px;">
+              <div class="upload-icon">🖼️</div>
+              <div class="upload-text">Haz clic o arrastra una imagen para portada</div>
+              <div class="upload-subtext">PNG, JPG hasta 5MB</div>
+              <input id="cover" type="file" accept="image/*" style="display: none;">
+            </div>
+            <div class="upload-actions">
+              <button id="subir-cover" class="btn-modern btn-small-modern btn-primary-modern">
+                <span>⬆️</span> Subir portada
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- Chat central -->
+    <!-- Chat central - SIEMPRE VISIBLE -->
     <main class="chat-panel">
       <div id="chat"></div>
       
