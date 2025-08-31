@@ -425,64 +425,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-// --- Subir avatar ---
-document.getElementById('subir-avatar')?.addEventListener('click', async () => {
-  const fileInput = document.getElementById('avatar');
-  const file = fileInput.files[0];
-  if (!file) return alert('Selecciona una imagen');
-  if (!token) return alert('Inicia sesión para subir avatar');
+  // --- Subir avatar ---
+  document.getElementById('subir-avatar')?.addEventListener('click', async () => {
+    const fileInput = document.getElementById('avatar');
+    const file = fileInput.files[0];
+    if (!file) return alert('Selecciona una imagen');
+    if (!token) return alert('Inicia sesión para subir avatar');
 
-  const formData = new FormData();
-  formData.append('avatar', file);
-  // NO enviar userId, el middleware autenticar ya obtiene el usuario del token
+    const formData = new FormData();
+    formData.append('avatar', file);
+    // NO enviar userId, el middleware autenticar ya obtiene el usuario del token
 
-  try {
-    const res = await fetch('/upload-avatar', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      },
-      body: formData
-    });
-    
-    const data = await res.json();
-    if (data.avatar) {
-      userAvatar = data.avatar;
-      document.getElementById('avatarPreview').src = userAvatar;
-
-      // Actualizar localStorage
-      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
-      updatedUser.avatar = userAvatar;
-      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
-
-      socket.emit('actualizar-estado', {
-        id: userId,
-        email: userEmail,
-        username,
-        avatar: userAvatar,
-        cover: userCover
+    try {
+      const res = await fetch('/upload-avatar', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        },
+        body: formData
       });
+      
+      const data = await res.json();
+      if (data.avatar) {
+        userAvatar = data.avatar;
+        document.getElementById('avatarPreview').src = userAvatar;
+
+        // Actualizar localStorage
+        const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+        updatedUser.avatar = userAvatar;
+        localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          username,
+          avatar: userAvatar,
+          cover: userCover
+        });
+      }
+      alert(data.message || 'Avatar subido');
+    } catch (err) {
+      console.error('upload avatar error', err);
+      alert('Error subiendo avatar');
     }
-    alert(data.message || 'Avatar subido');
-  } catch (err) {
-    console.error('upload avatar error', err);
-    alert('Error subiendo avatar');
-  }
-});
+  });
 
   // --- Subir cover ---
   document.getElementById('subir-cover')?.addEventListener('click', async () => {
     const fileInput = document.getElementById('cover');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen de portada');
-    if (!userId) return alert('Inicia sesión para subir portada');
+    if (!token) return alert('Inicia sesión para subir portada'); // ← Cambiado de userId a token
 
     const formData = new FormData();
     formData.append('cover', file);
-    formData.append('userId', userId);
+    // NO enviar userId, el middleware autenticar ya obtiene el usuario del token
 
     try {
-      const res = await fetch('/upload-cover', { method: 'POST', body: formData });
+      const res = await fetch('/upload-cover', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token // ← Añadir header de autorización
+        },
+        body: formData
+      });
+      
       const data = await res.json();
       if (data.cover) {
         userCover = data.cover;
