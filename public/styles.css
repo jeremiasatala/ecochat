@@ -195,3 +195,7 @@
 .hidden {
   display: none !important;
 }
+
+html {
+  font-family: arial, sans-serif;
+}
