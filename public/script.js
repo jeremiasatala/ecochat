@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let userEmail = '';
   let token = '';
   let userId = '';
-  let userAvatar = '';
-  let userCover = '';
+  let userAvatar = 'assets/default-avatar.png';
+  let userCover = 'assets/default-cover.png';
 
-  // Debug: conexión socket
+  // --- Debug socket ---
   socket.on('connect', () => console.log('socket conectado', socket.id));
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
 
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     charCountEl && (charCountEl.textContent = `${mensajeInput.value.length}/200`);
   });
 
-  // --- Render lista de usuarios (cover + avatar + email) ---
+  // --- Render lista de usuarios ---
   socket.on('actualizar-usuarios', (usuarios = []) => {
     userList.innerHTML = '';
     usuarios.forEach(u => {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Mostrar mensajes en el DOM ---
+  // --- Mostrar mensajes ---
   function scrollAbajo() {
     chat.scrollTop = chat.scrollHeight;
   }
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chat.appendChild(div);
     scrollAbajo();
 
-    // Borrar después de 60s (coincide con TTL en servidor)
+    // Borrar después de 60s
     const ahora = Date.now();
     const fecha = new Date(m.fecha).getTime();
     const restante = Math.max(0, 60000 - (ahora - fecha));
@@ -137,90 +137,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
   socket.on('nuevo-mensaje', (m) => agregarMensaje(m));
 
-  // Cuando alguien actualiza avatar -> actualizar avatares en mensajes y lista
   socket.on('avatar-actualizado', ({ usuario, avatar }) => {
-    // actualizar avatars en mensajes (por alt que es el email/nombre)
     document.querySelectorAll('#chat img[alt]').forEach(img => {
       if (img.alt === usuario) img.src = avatar || 'assets/default-avatar.png';
     });
-    // actualizar la lista de usuarios (se volverá a emitir 'actualizar-usuarios' desde servidor normalmente)
   });
 
   // --- Registro ---
-  if (registerBtn) {
-    registerBtn.addEventListener('click', async () => {
-      try {
-        const email = document.getElementById('registerEmail').value.trim();
-        const password = document.getElementById('registerPassword').value.trim();
-        if (!email || !password) return alert('Completa email y contraseña');
+  registerBtn?.addEventListener('click', async () => {
+    try {
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value.trim();
+      if (!email || !password) return alert('Completa email y contraseña');
 
-        const res = await fetch('/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          alert('Registrado. Iniciá sesión.');
-        } else {
-          alert(data.error || 'Error al registrar');
-        }
-      } catch (err) {
-        console.error('register error', err);
-        alert('Error en registro, mira la consola');
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Registrado. Iniciá sesión.');
+      } else {
+        alert(data.error || 'Error al registrar');
       }
-    });
-  }
+    } catch (err) {
+      console.error('register error', err);
+      alert('Error en registro, mira la consola');
+    }
+  });
 
   // --- Login ---
-  if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
-      try {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        if (!email || !password) return alert('Completa email y contraseña');
+  loginBtn?.addEventListener('click', async () => {
+    try {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      if (!email || !password) return alert('Completa email y contraseña');
 
-        const res = await fetch('/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.token) {
-          token = data.token;
-          userEmail = email;
-          // extraer id desde payload
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            userId = payload.id;
-          } catch (e) {
-            console.warn('No se pudo extraer userId del token', e);
-          }
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        token = data.token;
+        userEmail = email;
 
-          // UI
-          document.getElementById('auth').style.display = 'none';
-          document.getElementById('profile').classList.remove('hidden');
-          document.getElementById('chatContainer').style.display = 'flex';
-          document.getElementById('userEmailDisplay').textContent = userEmail;
-
-          // obtener datos usuario
-          const userRes = await fetch(`/user/${userId}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-          });
-          const userData = await userRes.json();
-          userAvatar = userData.avatar || 'assets/default-avatar.png';
-          userCover = userData.cover || 'assets/default-cover.png';
-          document.getElementById('avatarPreview').src = userAvatar;
-          document.getElementById('coverPreview').src = userCover;
-        } else {
-          alert(data.error || 'Error al iniciar sesión');
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id;
+        } catch (e) {
+          console.warn('No se pudo extraer userId del token', e);
         }
-      } catch (err) {
-        console.error('login error', err);
-        alert('Error en login, mira la consola');
+
+        // UI
+        document.getElementById('auth').style.display = 'none';
+        document.getElementById('profile').classList.remove('hidden');
+        document.getElementById('chatContainer').style.display = 'flex';
+        document.getElementById('userEmailDisplay').textContent = userEmail;
+
+        // obtener datos usuario
+        const userRes = await fetch(`/user/${userId}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const userData = await userRes.json();
+
+        userAvatar = userData.avatar || 'assets/default-avatar.png';
+        userCover = userData.cover || 'assets/default-cover.png';
+
+        // Actualizar previews en el perfil
+        document.getElementById('avatarPreview').src = userAvatar;
+        document.getElementById('coverPreview').src = userCover;
+
+        // Emitir presencia con avatar/cover
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          avatar: userAvatar,
+          cover: userCover
+        });
+      } else {
+        alert(data.error || 'Error al iniciar sesión');
       }
-    });
-  }
+    } catch (err) {
+      console.error('login error', err);
+      alert('Error en login, mira la consola');
+    }
+  });
 
   // --- Enviar mensaje ---
   enviarBtn?.addEventListener('click', () => {
@@ -231,6 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.emit('nuevo-mensaje', {
       usuario: userEmail || 'Invitado',
       texto,
+      avatar: userAvatar,
+      cover: userCover,
       token
     });
 
@@ -238,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
     charCountEl && (charCountEl.textContent = '0/200');
   });
 
-  // Enviar con Enter
   mensajeInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -263,6 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.avatar) {
         userAvatar = data.avatar;
         document.getElementById('avatarPreview').src = userAvatar;
+
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          avatar: userAvatar,
+          cover: userCover
+        });
       }
       alert(data.message || 'Avatar subido');
     } catch (err) {
@@ -288,6 +300,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.cover) {
         userCover = data.cover;
         document.getElementById('coverPreview').src = userCover;
+
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          avatar: userAvatar,
+          cover: userCover
+        });
       }
       alert(data.message || 'Cover subido');
     } catch (err) {

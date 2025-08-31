@@ -47,7 +47,17 @@ app.post('/login', async (req, res) => {
   if (!isValid) return res.status(400).json({ error: 'Contraseña incorrecta' });
 
   const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-  res.json({ message: 'Login correcto', token });
+
+  res.json({
+    message: 'Login correcto',
+    token,
+    user: {
+      id: user._id,
+      email: user.email,
+      avatar: user.avatar || '/assets/default-avatar.png',
+      cover: user.cover || '/assets/default-cover.png'
+    }
+  });
 });
 
 // Obtener usuario
