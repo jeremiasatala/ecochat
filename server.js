@@ -54,6 +54,7 @@ app.post('/login', async (req, res) => {
     user: {
       id: user._id,
       email: user.email,
+      username: user.username || '', // añadimos username
       avatar: user.avatar || '/assets/default-avatar.png',
       cover: user.cover || '/assets/default-cover.png'
     }
@@ -66,12 +67,33 @@ app.get('/user/:id', async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
     res.json({ 
-      email: user.email, 
+      email: user.email,
+      username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png' 
     });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
+  }
+});
+
+// Actualizar username
+app.post('/set-username', async (req, res) => {
+  const { username, token } = req.body;
+  if (!token) return res.status(401).json({ error: 'No autenticado' });
+
+  try {
+    const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    user.username = username;
+    await user.save();
+
+    res.json({ message: 'Username actualizado', username: user.username });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: 'Token inválido' });
   }
 });
 
@@ -110,11 +132,11 @@ app.post('/upload-avatar', upload.single('avatar'), async (req, res) => {
     await user.save();
 
     await Mensaje.updateMany(
-      { usuario: user.email },
+      { usuario: user.username || user.email },
       { $set: { avatar: user.avatar } }
     );
 
-    io.emit('avatar-actualizado', { usuario: user.email, avatar: user.avatar });
+    io.emit('avatar-actualizado', { usuario: user.username || user.email, avatar: user.avatar });
 
     res.json({ message: 'Avatar subido y mensajes actualizados', avatar: user.avatar });
   } catch (err) {
@@ -133,7 +155,7 @@ app.post('/upload-cover', upload.single('cover'), async (req, res) => {
     user.cover = '/uploads/' + req.file.filename;
     await user.save();
 
-    io.emit('cover-actualizado', { usuario: user.email, cover: user.cover });
+    io.emit('cover-actualizado', { usuario: user.username || user.email, cover: user.cover });
 
     res.json({ message: 'Cover subido correctamente', cover: user.cover });
   } catch (err) {
@@ -155,12 +177,12 @@ io.on('connection', (socket) => {
       usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
     });
 
-    const usuariosDB = await User.find({ email: { $in: Object.keys(usuariosMap) } });
+    const usuariosDB = await User.find({ $or: usuariosMap ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
     usuariosDB.forEach(u => {
-      if (usuariosMap[u.email]) usuariosMap[u.email].cover = u.cover || '/assets/default-cover.png';
+      if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
     });
 
-    socket.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([email, { avatar, cover }]) => ({ email, avatar, cover })));
+    socket.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
   })();
 
   socket.on('nuevo-mensaje', async (data) => {
@@ -168,7 +190,7 @@ io.on('connection', (socket) => {
     try {
       let userAvatar = '/assets/default-avatar.png';
       let userCover = '/assets/default-cover.png';
-      let userEmail = usuario || 'Invitado';
+      let displayName = usuario || 'Invitado';
 
       if (token) {
         const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET);
@@ -176,11 +198,11 @@ io.on('connection', (socket) => {
         if (user) {
           userAvatar = user.avatar || '/assets/default-avatar.png';
           userCover = user.cover || '/assets/default-cover.png';
-          userEmail = user.email;
+          displayName = user.username || user.email;
         }
       }
 
-      const mensaje = new Mensaje({ usuario: userEmail, texto, avatar: userAvatar });
+      const mensaje = new Mensaje({ usuario: displayName, texto, avatar: userAvatar });
       await mensaje.save();
       io.emit('nuevo-mensaje', mensaje);
 
@@ -190,12 +212,12 @@ io.on('connection', (socket) => {
         usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
       });
 
-      const usuariosDB = await User.find({ email: { $in: Object.keys(usuariosMap) } });
+      const usuariosDB = await User.find({ $or: mensajesActuales ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
       usuariosDB.forEach(u => {
-        if (usuariosMap[u.email]) usuariosMap[u.email].cover = u.cover || '/assets/default-cover.png';
+        if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
       });
 
-      io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([email, { avatar, cover }]) => ({ email, avatar, cover })));
+      io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
     } catch (err) {
       console.log('Error al crear mensaje:', err.message);
     }
@@ -212,12 +234,12 @@ setInterval(async () => {
     usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
   });
 
-  const usuariosDB = await User.find({ email: { $in: Object.keys(usuariosMap) } });
+  const usuariosDB = await User.find({ $or: mensajes ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
   usuariosDB.forEach(u => {
-    if (usuariosMap[u.email]) usuariosMap[u.email].cover = u.cover || '/assets/default-cover.png';
+    if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
   });
 
-  io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([email, { avatar, cover }]) => ({ email, avatar, cover })));
+  io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
 }, 15000);
 
 const PORT = process.env.PORT || 3000;

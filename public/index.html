@@ -18,6 +18,7 @@
       <!-- AUTH (mostrar por defecto) -->
       <div id="auth">
         <h3>Registrarse</h3>
+        <input id="registerUsername" type="text" placeholder="Nombre de usuario">
         <input id="registerEmail" type="email" placeholder="Email">
         <input id="registerPassword" type="password" placeholder="Contraseña">
         <button id="registerBtn">Registrar</button>
@@ -42,7 +43,7 @@
           </div>
 
           <div class="profile-info">
-            <h3 id="userEmailDisplay">Invitado</h3>
+            <h3 id="usernameDisplay">Invitado</h3>
             <p id="bio">Bienvenido a EcoChat</p>
             <p class="stats">Mensajes enviados: <span id="messageCount">0</span></p>
             <button id="editProfileBtn">Editar Perfil</button>
@@ -52,6 +53,11 @@
         <hr style="margin:10px 0">
 
         <div>
+          <label>Nombre de usuario</label><br>
+          <input id="editUsername" type="text" placeholder="Nuevo nombre de usuario">
+        </div>
+
+        <div style="margin-top:8px;">
           <label>Avatar</label><br>
           <input id="avatar" type="file" accept="image/*"><button id="subir-avatar" class="upload-btn">Subir</button>
         </div>

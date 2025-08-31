@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerBtn = document.getElementById('registerBtn');
   const loginBtn = document.getElementById('loginBtn');
 
+  let username = '';
   let userEmail = '';
   let token = '';
   let userId = '';
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatar = document.createElement('img');
       avatar.src = u.avatar || 'assets/default-avatar.png';
-      avatar.alt = u.email || 'Invitado';
+      avatar.alt = u.username || u.email || 'Invitado';
       avatar.style.width = '48px';
       avatar.style.height = '48px';
       avatar.style.borderRadius = '50%';
@@ -66,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       info.style.marginTop = '26px';
       info.style.textAlign = 'center';
       info.style.fontSize = '13px';
-      info.textContent = u.email || 'Invitado';
+      info.textContent = u.username || u.email || 'Invitado';
 
       li.appendChild(coverDiv);
       li.appendChild(info);
@@ -97,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
-    avatarImg.alt = m.usuario || 'Invitado';
+    avatarImg.alt = m.username || m.usuario || 'Invitado';
     avatarImg.style.width = '40px';
     avatarImg.style.height = '40px';
     avatarImg.style.borderRadius = '50%';
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const who = document.createElement('div');
     who.style.fontSize = '13px';
     who.style.fontWeight = '600';
-    who.textContent = `${m.usuario} • ${hora}`;
+    who.textContent = `${m.username || m.usuario} • ${hora}`;
     const text = document.createElement('div');
     text.style.marginTop = '4px';
     text.textContent = m.texto;
@@ -122,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
     chat.appendChild(div);
     scrollAbajo();
 
-    // Borrar después de 60s
     const ahora = Date.now();
     const fecha = new Date(m.fecha).getTime();
     const restante = Math.max(0, 60000 - (ahora - fecha));
@@ -137,9 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   socket.on('nuevo-mensaje', (m) => agregarMensaje(m));
 
-  socket.on('avatar-actualizado', ({ usuario, avatar }) => {
+  socket.on('avatar-actualizado', ({ usuario, username, avatar }) => {
     document.querySelectorAll('#chat img[alt]').forEach(img => {
-      if (img.alt === usuario) img.src = avatar || 'assets/default-avatar.png';
+      if (img.alt === username || img.alt === usuario) img.src = avatar || 'assets/default-avatar.png';
     });
   });
 
@@ -148,12 +148,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value.trim();
-      if (!email || !password) return alert('Completa email y contraseña');
+      const newUsername = document.getElementById('registerUsername').value.trim();
+      if (!email || !password || !newUsername) return alert('Completa todos los campos');
 
       const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, username: newUsername })
       });
       const data = await res.json();
       if (res.ok) {
@@ -172,16 +173,18 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-      if (!email || !password) return alert('Completa email y contraseña');
+      const loginUsername = document.getElementById('loginUsername').value.trim();
+      if (!email || !password || !loginUsername) return alert('Completa todos los campos');
 
       const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, username: loginUsername })
       });
       const data = await res.json();
       if (data.token) {
         token = data.token;
+        username = loginUsername;
         userEmail = email;
 
         try {
@@ -195,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('auth').style.display = 'none';
         document.getElementById('profile').classList.remove('hidden');
         document.getElementById('chatContainer').style.display = 'flex';
-        document.getElementById('userEmailDisplay').textContent = userEmail;
+        document.getElementById('userEmailDisplay').textContent = username;
 
         // obtener datos usuario
         const userRes = await fetch(`/user/${userId}`, {
@@ -206,14 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
         userAvatar = userData.avatar || 'assets/default-avatar.png';
         userCover = userData.cover || 'assets/default-cover.png';
 
-        // Actualizar previews en el perfil
         document.getElementById('avatarPreview').src = userAvatar;
         document.getElementById('coverPreview').src = userCover;
 
-        // Emitir presencia con avatar/cover
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
+          username,
           avatar: userAvatar,
           cover: userCover
         });
@@ -234,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.emit('nuevo-mensaje', {
       usuario: userEmail || 'Invitado',
+      username: username || userEmail || 'Invitado',
       texto,
       avatar: userAvatar,
       cover: userCover,
@@ -272,6 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
+          username,
           avatar: userAvatar,
           cover: userCover
         });
@@ -304,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
+          username,
           avatar: userAvatar,
           cover: userCover
         });

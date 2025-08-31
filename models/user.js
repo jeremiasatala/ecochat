@@ -4,9 +4,11 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  avatar: { type: String, default: '/assets/default-avatar.png' }, // valor por defecto
-  cover: { type: String, default: '' }   // campo para la foto de portada
+  username: { type: String, unique: true, sparse: true }, // NUEVO
+  avatar: { type: String, default: '/assets/default-avatar.png' },
+  cover: { type: String, default: '' }
 });
+
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
