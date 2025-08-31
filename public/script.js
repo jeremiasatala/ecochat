@@ -188,64 +188,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Login ---
   loginBtn?.addEventListener('click', async () => {
-    try {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      if (!email || !password) return alert('Completa todos los campos');
+  try {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if (!email || !password) return alert('Completa todos los campos');
 
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (data.token) {
-        token = data.token;
-        userEmail = email;
+    const res = await fetch('/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.token) {
+      token = data.token;
+      userEmail = email;
 
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          userId = payload.id;
-          username = payload.username || email;
-        } catch (e) {
-          console.warn('No se pudo extraer userId del token', e);
-        }
-
-        // UI
-        document.getElementById('auth').style.display = 'none';
-        document.getElementById('profile').classList.remove('hidden');
-        document.getElementById('chatContainer').style.display = 'flex';
-        document.getElementById('usernameDisplay').textContent = username;
-
-        // obtener datos usuario
-        const userRes = await fetch(`/user/${userId}`, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        const userData = await userRes.json();
-
-        userAvatar = userData.avatar || 'assets/default-avatar.png';
-        userCover = userData.cover || 'assets/default-cover.png';
-        username = userData.username || username;
-
-        document.getElementById('avatarPreview').src = userAvatar;
-        document.getElementById('coverPreview').src = userCover;
-        document.getElementById('usernameDisplay').textContent = username;
-
-        // actualizar estado en socket
-        socket.emit('actualizar-estado', {
-          id: userId,
-          email: userEmail,
-          username,
-          avatar: userAvatar,
-          cover: userCover
-        });
-      } else {
-        alert(data.error || 'Error al iniciar sesión');
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.id;
+        username = payload.username || email;
+      } catch (e) {
+        console.warn('No se pudo extraer userId del token', e);
       }
-    } catch (err) {
-      console.error('login error', err);
-      alert('Error en login, mira la consola');
+
+      // UI - CORREGIDO
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('profile').classList.remove('hidden');
+      
+      // Cambiar esta línea:
+      document.querySelector('.chat-panel').style.display = 'flex';
+      
+      document.getElementById('usernameDisplay').textContent = username;
+
+      // obtener datos usuario
+      const userRes = await fetch(`/user/${userId}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const userData = await userRes.json();
+
+      userAvatar = userData.avatar || 'assets/default-avatar.png';
+      userCover = userData.cover || 'assets/default-cover.png';
+      username = userData.username || username;
+
+      document.getElementById('avatarPreview').src = userAvatar;
+      document.getElementById('coverPreview').src = userCover;
+      document.getElementById('usernameDisplay').textContent = username;
+
+      // actualizar estado en socket
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover
+      });
+    } else {
+      alert(data.error || 'Error al iniciar sesión');
     }
+  } catch (err) {
+    console.error('login error', err);
+    alert('Error en login, mira la consola');
+  }
   });
 
   // --- Enviar mensaje ---
