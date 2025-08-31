@@ -6,7 +6,7 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const fs = require('fs'); // ← AÑADIDO
+const fs = require('fs');
 const User = require('./models/user');
 
 // Asegurar que la carpeta de uploads existe
@@ -18,23 +18,27 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Configuración mejorada de Multer
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
+  destination: (req, file, cb) => {
+    const uploadDir = 'public/uploads/';
+    // Crear directorio si no existe
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    // Nombre único para evitar conflictos
+  filename: (req, file, cb) => {
+    // Nombre único para el archivo
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB límite
+    fileSize: 5 * 1024 * 1024 // 5MB límite
   },
-  fileFilter: function (req, file, cb) {
-    // Solo permitir imágenes
+  fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
@@ -47,9 +51,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Servir archivos estáticos CORRECTAMENTE
+
+// Servir archivos estáticos CORREGIDO
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(uploadsDir)); // ← ¡IMPORTANTE!
 app.use(express.json());
 
 mongoose.connect(
@@ -60,10 +64,13 @@ mongoose.connect(
 
 const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
 
-// Middleware de autenticación
+// Middleware de autenticación CORREGIDO
 const autenticar = (req, res, next) => {
-  const token = req.headers['authorization'] || req.body.token;
-  if (!token) return res.status(401).json({ error: 'No autenticado' });
+  let token = req.headers['authorization'] || req.body.token || req.query.token;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No autenticado' });
+  }
 
   try {
     const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
@@ -222,7 +229,7 @@ const mensajeSchema = new mongoose.Schema({
 
 const Mensaje = mongoose.model('Mensaje', mensajeSchema);
 
-// Subir avatar - VERSIÓN CORREGIDA
+// Subir avatar - CORREGIDO
 app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
@@ -232,11 +239,9 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
     const user = await User.findById(req.user.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
-    // Ruta relativa para el frontend
     user.avatar = '/uploads/' + req.file.filename;
     await user.save();
 
-    // Actualizar mensajes existentes
     await Mensaje.updateMany(
       { usuario: user.username || user.email },
       { $set: { avatar: user.avatar } }
@@ -251,22 +256,13 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
       message: 'Avatar subido correctamente', 
       avatar: user.avatar 
     });
-
   } catch (err) {
-    console.error('Error en upload-avatar:', err);
-    
-    // Eliminar archivo si hubo error
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
-    
-    res.status(500).json({ 
-      error: err.message || 'Error al subir el avatar' 
-    });
+    console.error('Error subiendo avatar:', err);
+    res.status(500).json({ error: 'Error al subir la imagen' });
   }
 });
 
-// Subir cover - VERSIÓN CORREGIDA
+// Subir cover - CORREGIDO
 app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) => {
   try {
     if (!req.file) {
@@ -285,24 +281,14 @@ app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) =
     });
 
     res.json({ 
-      message: 'Portada subida correctamente', 
+      message: 'Cover subido correctamente', 
       cover: user.cover 
     });
-
   } catch (err) {
-    console.error('Error en upload-cover:', err);
-    
-    // Eliminar archivo si hubo error
-    if (req.file) {
-      fs.unlinkSync(req.file.path);
-    }
-    
-    res.status(500).json({ 
-      error: err.message || 'Error al subir la portada' 
-    });
+    console.error('Error subiendo cover:', err);
+    res.status(500).json({ error: 'Error al subir la imagen' });
   }
 });
-
 // Logout (limpiar token del lado del cliente)
 app.post('/logout', autenticar, (req, res) => {
   res.json({ message: 'Sesión cerrada correctamente' });
