@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let userId = '';
   let userAvatar = 'assets/default-avatar.png';
   let userCover = 'assets/default-cover.png';
+  let usersData = {}; // Almacenar datos de usuarios
 
   // --- Manejar inputs modernos ---
   document.querySelectorAll('.modern-input').forEach(input => {
@@ -34,6 +35,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- Sistema de tabs ---
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remover active de todos
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      // Activar el clickeado
+      btn.classList.add('active');
+      document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+    });
+  });
+
+  // --- Cerrar inspector ---
+  document.getElementById('close-inspector')?.addEventListener('click', () => {
+    document.querySelector('[data-tab="users"]').click();
+  });
+
   // --- Debug socket ---
   socket.on('connect', () => console.log('socket conectado', socket.id));
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
@@ -48,6 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on('actualizar-usuarios', (usuarios = []) => {
     userList.innerHTML = '';
     usuarios.forEach(u => {
+      // Guardar datos del usuario
+      const userKey = u.usuario || u.email;
+      usersData[userKey] = u;
+      
       const li = document.createElement('li');
       li.style.display = 'flex';
       li.style.flexDirection = 'column';
@@ -57,6 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
       li.style.overflow = 'hidden';
       li.style.background = '#fafafa';
       li.style.padding = '6px';
+      li.style.cursor = 'pointer';
+
+      // Hacer clickeable el usuario
+      li.addEventListener('click', () => {
+        inspeccionarPerfil(userKey);
+      });
 
       const coverDiv = document.createElement('div');
       coverDiv.style.height = '60px';
@@ -113,6 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
     div.style.borderRadius = '8px';
     div.style.background = '#fff';
     div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+    div.style.cursor = 'pointer';
+
+    // Hacer el mensaje clickeable para inspeccionar perfil
+    div.addEventListener('click', () => {
+      inspeccionarPerfil(m.usuario || m.email);
+    });
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
@@ -145,6 +180,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const fecha = new Date(m.fecha).getTime();
     const restante = Math.max(0, 60000 - (ahora - fecha));
     setTimeout(() => eliminarMensaje(div), restante);
+  }
+
+  // --- Función para inspeccionar perfil ---
+  function inspeccionarPerfil(usernameOrEmail) {
+    const user = usersData[usernameOrEmail];
+    
+    if (user) {
+      // Llenar el inspector con datos
+      document.getElementById('inspector-username').textContent = user.username || user.usuario || user.email;
+      document.getElementById('inspector-email').textContent = user.email || 'No disponible';
+      document.getElementById('inspector-avatar').src = user.avatar || 'assets/default-avatar.png';
+      document.getElementById('inspector-cover').src = user.cover || 'assets/default-cover.png';
+      document.getElementById('inspector-messages').textContent = user.messageCount || '0';
+      document.getElementById('inspector-lastseen').textContent = 'En línea';
+      
+      // Cambiar a la pestaña de perfil
+      document.querySelector('[data-tab="profile"]').click();
+    } else {
+      alert('No se encontró información del usuario');
+    }
   }
 
   socket.on('cargar-mensajes', (mensajes = []) => {
@@ -188,67 +243,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Login ---
   loginBtn?.addEventListener('click', async () => {
-  try {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    if (!email || !password) return alert('Completa todos los campos');
+    try {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      if (!email || !password) return alert('Completa todos los campos');
 
-    const res = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (data.token) {
-      token = data.token;
-      userEmail = email;
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (data.token) {
+        token = data.token;
+        userEmail = email;
 
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        userId = payload.id;
-        username = payload.username || email;
-      } catch (e) {
-        console.warn('No se pudo extraer userId del token', e);
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          userId = payload.id;
+          username = payload.username || email;
+        } catch (e) {
+          console.warn('No se pudo extraer userId del token', e);
+        }
+
+        // UI
+        document.getElementById('auth').style.display = 'none';
+        document.getElementById('profile').classList.remove('hidden');
+        document.querySelector('.chat-panel').style.display = 'flex';
+        document.getElementById('usernameDisplay').textContent = username;
+
+        // obtener datos usuario
+        const userRes = await fetch(`/user/${userId}`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const userData = await userRes.json();
+
+        userAvatar = userData.avatar || 'assets/default-avatar.png';
+        userCover = userData.cover || 'assets/default-cover.png';
+        username = userData.username || username;
+
+        document.getElementById('avatarPreview').src = userAvatar;
+        document.getElementById('coverPreview').src = userCover;
+        document.getElementById('usernameDisplay').textContent = username;
+
+        // actualizar estado en socket
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          username,
+          avatar: userAvatar,
+          cover: userCover
+        });
+      } else {
+        alert(data.error || 'Error al iniciar sesión');
       }
-
-      // UI - CORREGIDO
-      document.getElementById('auth').style.display = 'none';
-      document.getElementById('profile').classList.remove('hidden');
-      
-      // Cambiar esta línea:
-      document.querySelector('.chat-panel').style.display = 'flex';
-      
-      document.getElementById('usernameDisplay').textContent = username;
-
-      // obtener datos usuario
-      const userRes = await fetch(`/user/${userId}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      const userData = await userRes.json();
-
-      userAvatar = userData.avatar || 'assets/default-avatar.png';
-      userCover = userData.cover || 'assets/default-cover.png';
-      username = userData.username || username;
-
-      document.getElementById('avatarPreview').src = userAvatar;
-      document.getElementById('coverPreview').src = userCover;
-      document.getElementById('usernameDisplay').textContent = username;
-
-      // actualizar estado en socket
-      socket.emit('actualizar-estado', {
-        id: userId,
-        email: userEmail,
-        username,
-        avatar: userAvatar,
-        cover: userCover
-      });
-    } else {
-      alert(data.error || 'Error al iniciar sesión');
+    } catch (err) {
+      console.error('login error', err);
+      alert('Error en login, mira la consola');
     }
-  } catch (err) {
-    console.error('login error', err);
-    alert('Error en login, mira la consola');
-  }
   });
 
   // --- Enviar mensaje ---

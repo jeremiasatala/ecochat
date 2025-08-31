@@ -77,6 +77,24 @@ app.get('/user/:id', async (req, res) => {
   }
 });
 
+// Obtener usuario por email (para el inspector)
+app.get('/user-by-email/:email', async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    res.json({ 
+      email: user.email,
+      username: user.username || '',
+      avatar: user.avatar || '/assets/default-avatar.png', 
+      cover: user.cover || '/assets/default-cover.png',
+      messageCount: 0, // Puedes implementar un contador real
+      lastSeen: new Date().toLocaleString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener usuario' });
+  }
+});
+
 // Actualizar username
 app.post('/set-username', async (req, res) => {
   const { username, token } = req.body;
@@ -173,16 +191,51 @@ io.on('connection', (socket) => {
     socket.emit('cargar-mensajes', mensajes);
 
     const usuariosMap = {};
+    const usuariosInfo = {}; // Nuevo: almacenar info completa de usuarios
+    
     mensajes.forEach(m => {
-      usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
+      usuariosMap[m.usuario] = { 
+        avatar: m.avatar || '/assets/default-avatar.png', 
+        cover: '' 
+      };
     });
 
-    const usuariosDB = await User.find({ $or: usuariosMap ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
+    const usuariosDB = await User.find({ 
+      $or: Object.keys(usuariosMap).length > 0 ? [
+        { username: { $in: Object.keys(usuariosMap) } },
+        { email: { $in: Object.keys(usuariosMap) } }
+      ] : [] 
+    });
+    
     usuariosDB.forEach(u => {
-      if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
+      const key = u.username || u.email;
+      if (usuariosMap[key]) {
+        usuariosMap[key].cover = u.cover || '/assets/default-cover.png';
+      }
+      
+      // Almacenar información completa para el inspector
+      usuariosInfo[key] = {
+        email: u.email,
+        username: u.username || '',
+        avatar: u.avatar || '/assets/default-avatar.png',
+        cover: u.cover || '/assets/default-cover.png',
+        messageCount: 0, // Puedes implementar contador real
+        lastSeen: 'En línea'
+      };
     });
 
-    socket.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
+    // Emitir datos completos para el inspector
+    socket.emit('actualizar-usuarios', 
+      Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({
+        usuario,
+        avatar,
+        cover,
+        email: usuariosInfo[usuario]?.email || usuario,
+        username: usuariosInfo[usuario]?.username || '',
+        messageCount: usuariosInfo[usuario]?.messageCount || 0,
+        lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
+      }))
+    );
   })();
 
   socket.on('nuevo-mensaje', async (data) => {
@@ -191,6 +244,7 @@ io.on('connection', (socket) => {
       let userAvatar = '/assets/default-avatar.png';
       let userCover = '/assets/default-cover.png';
       let displayName = usuario || 'Invitado';
+      let userEmail = usuario;
 
       if (token) {
         const decoded = jwt.verify(token.split(' ')[1] || token, JWT_SECRET);
@@ -199,27 +253,77 @@ io.on('connection', (socket) => {
           userAvatar = user.avatar || '/assets/default-avatar.png';
           userCover = user.cover || '/assets/default-cover.png';
           displayName = user.username || user.email;
+          userEmail = user.email;
         }
       }
 
       const mensaje = new Mensaje({ usuario: displayName, texto, avatar: userAvatar });
       await mensaje.save();
-      io.emit('nuevo-mensaje', mensaje);
+      io.emit('nuevo-mensaje', { ...mensaje.toObject(), email: userEmail });
 
       const mensajesActuales = await Mensaje.find();
       const usuariosMap = {};
+      const usuariosInfo = {};
+      
       mensajesActuales.forEach(m => {
         usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
       });
 
-      const usuariosDB = await User.find({ $or: mensajesActuales ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
+      const usuariosDB = await User.find({ 
+        $or: Object.keys(usuariosMap).length > 0 ? [
+          { username: { $in: Object.keys(usuariosMap) } },
+          { email: { $in: Object.keys(usuariosMap) } }
+        ] : [] 
+      });
+      
       usuariosDB.forEach(u => {
-        if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
+        const key = u.username || u.email;
+        if (usuariosMap[key]) {
+          usuariosMap[key].cover = u.cover || '/assets/default-cover.png';
+        }
+        
+        usuariosInfo[key] = {
+          email: u.email,
+          username: u.username || '',
+          avatar: u.avatar || '/assets/default-avatar.png',
+          cover: u.cover || '/assets/default-cover.png',
+          messageCount: 0,
+          lastSeen: 'En línea'
+        };
       });
 
-      io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
+      io.emit('actualizar-usuarios', 
+        Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({
+          usuario,
+          avatar,
+          cover,
+          email: usuariosInfo[usuario]?.email || usuario,
+          username: usuariosInfo[usuario]?.username || '',
+          messageCount: usuariosInfo[usuario]?.messageCount || 0,
+          lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
+        }))
+      );
     } catch (err) {
       console.log('Error al crear mensaje:', err.message);
+    }
+  });
+
+  // Nuevo evento: solicitar información específica de usuario para el inspector
+  socket.on('solicitar-info-usuario', async (email) => {
+    try {
+      const user = await User.findOne({ email });
+      if (user) {
+        socket.emit('info-usuario', {
+          email: user.email,
+          username: user.username || '',
+          avatar: user.avatar || '/assets/default-avatar.png',
+          cover: user.cover || '/assets/default-cover.png',
+          messageCount: 0, // Implementar contador real si es necesario
+          lastSeen: new Date().toLocaleString()
+        });
+      }
+    } catch (err) {
+      console.log('Error al obtener info de usuario:', err);
     }
   });
 });
@@ -230,16 +334,46 @@ setInterval(async () => {
   io.emit('cargar-mensajes', mensajes);
 
   const usuariosMap = {};
+  const usuariosInfo = {};
+  
   mensajes.forEach(m => {
     usuariosMap[m.usuario] = { avatar: m.avatar || '/assets/default-avatar.png', cover: '' };
   });
 
-  const usuariosDB = await User.find({ $or: mensajes ? [{ username: { $in: Object.keys(usuariosMap) } }] : [] });
+  const usuariosDB = await User.find({ 
+    $or: Object.keys(usuariosMap).length > 0 ? [
+      { username: { $in: Object.keys(usuariosMap) } },
+      { email: { $in: Object.keys(usuariosMap) } }
+    ] : [] 
+  });
+  
   usuariosDB.forEach(u => {
-    if (usuariosMap[u.username || u.email]) usuariosMap[u.username || u.email].cover = u.cover || '/assets/default-cover.png';
+    const key = u.username || u.email;
+    if (usuariosMap[key]) {
+      usuariosMap[key].cover = u.cover || '/assets/default-cover.png';
+    }
+    
+    usuariosInfo[key] = {
+      email: u.email,
+      username: u.username || '',
+      avatar: u.avatar || '/assets/default-avatar.png',
+      cover: u.cover || '/assets/default-cover.png',
+      messageCount: 0,
+      lastSeen: 'En línea'
+    };
   });
 
-  io.emit('actualizar-usuarios', Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({ usuario, avatar, cover })));
+  io.emit('actualizar-usuarios', 
+    Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({
+      usuario,
+      avatar,
+      cover,
+      email: usuariosInfo[usuario]?.email || usuario,
+      username: usuariosInfo[usuario]?.username || '',
+      messageCount: usuariosInfo[usuario]?.messageCount || 0,
+      lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
+    }))
+  );
 }, 15000);
 
 const PORT = process.env.PORT || 3000;

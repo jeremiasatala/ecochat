@@ -115,14 +115,45 @@
       </div>
     </main>
 
-    <!-- Sidebar derecha: lista de usuarios -->
+    <!-- Sidebar derecha: lista de usuarios e inspector -->
     <aside class="sidebar-right sidebar">
-      <h3>Usuarios conectados</h3>
-      <ul id="userList"></ul>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="users">Usuarios</button>
+        <button class="tab-btn" data-tab="profile">Perfil</button>
+      </div>
+
+      <!-- Lista de usuarios -->
+      <div id="users-tab" class="tab-content active">
+        <h3>Usuarios conectados</h3>
+        <ul id="userList"></ul>
+      </div>
+
+      <!-- Inspector de perfil -->
+      <div id="profile-tab" class="tab-content">
+        <div id="profile-inspector">
+          <div class="inspector-header">
+            <h3>Perfil de <span id="inspector-username">Usuario</span></h3>
+            <button id="close-inspector" class="close-btn">×</button>
+          </div>
+          
+          <div class="inspector-cover">
+            <img id="inspector-cover" src="assets/default-cover.png" alt="Portada">
+          </div>
+          
+          <div class="inspector-avatar">
+            <img id="inspector-avatar" src="assets/default-avatar.png" alt="Avatar">
+          </div>
+          
+          <div class="inspector-info">
+            <p><strong>Email:</strong> <span id="inspector-email">email@ejemplo.com</span></p>
+            <p><strong>Mensajes enviados:</strong> <span id="inspector-messages">0</span></p>
+            <p><strong>Última conexión:</strong> <span id="inspector-lastseen">Ahora</span></p>
+          </div>
+        </div>
+      </div>
     </aside>
-
   </div>
-
+  
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
