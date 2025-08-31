@@ -1,189 +1,189 @@
-body {
+/* Reset */
+* {
   margin: 0;
-  font-family: "Inter", sans-serif;
-  background: #f5f6fa;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background: #f5f7fa;
   color: #333;
 }
 
+/* Layout principal */
 .layout {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 280px 1fr 280px;
   gap: 20px;
   padding: 20px;
   height: 100vh;
-  box-sizing: border-box;
-  overflow-x: hidden;
 }
 
-.sidebar, .chat-panel {
+/* -------- Sidebar izquierda -------- */
+.sidebar-left {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  align-items: center;
 }
 
-.sidebar {
+.logo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 10px;
-  overflow-y: auto;
 }
 
-.chat-panel {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.logo-img {
+  width: 40px;
+  height: 40px;
 }
 
-.profile-card {
-  margin-bottom: 15px;
+/* Tarjeta de perfil */
+#profile-card {
+  margin-top: 15px;
+  width: 100%;
   text-align: center;
   border-radius: 12px;
   overflow: hidden;
   background: #fafafa;
 }
 
-.comment {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #fff;
-  margin-bottom: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.comment img.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.cover-photo img {
+  width: 100%;
+  height: 100px;
   object-fit: cover;
 }
 
-@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
-@keyframes slideOutRight { from {opacity:1; transform:translateX(0);} to {opacity:0; transform:translateX(50%);} }
-.comment.removing { animation: slideOutRight 0.3s forwards; }
-
-.comment-form {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 40px;
-  padding: 8px 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+.avatar-container {
+  margin-top: -40px;
 }
 
-.comment-form textarea {
-  flex: 1;
-  border: none;
-  outline: none;
-  resize: none;
-  font-size: 14px;
-  padding: 8px;
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-.comment-form button {
-  background: #007BFF;
-  color: white;
-  border: none;
+.avatar {
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
+  border: 3px solid #fff;
+}
+
+.profile-info {
+  padding: 10px;
+}
+
+.profile-info h3 {
+  margin: 5px 0;
+}
+
+.stats {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+#editProfileBtn {
+  background: #007bff;
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-.profile-form {
-  padding: 15px;
-  background: #fafafa;
+#editProfileBtn:hover {
+  background: #0056b3;
+}
+
+/* -------- Panel central -------- */
+.chat-panel {
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  padding: 15px;
+  height: 100%;
 }
-
-.hidden { display: none; }
-
-#userList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1;
-  overflow-y: auto;
-  max-height: calc(100vh - 60px);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* NUEVO: estilos para cover + avatar centrado + info */
-#userList li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 0;
-}
-
-#userList li .cover-photo {
-  width: 100%;
-  height: 80px;
-  border-radius: 12px;
-  background: #ccc center/cover no-repeat;
-  position: relative;
-}
-
-#userList li .cover-photo img.avatar {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  object-fit: cover;
-  background: #fff;
-}
-
-#userList li .profile-info {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-}
-/* FIN NUEVO */
 
 #chat {
-  flex: 1 1 auto;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 10px;
   background: #f9f9f9;
   border-radius: 8px;
-  overflow-y: auto;
+}
+
+.message {
+  padding: 8px 12px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  max-width: 70%;
+}
+
+.comment-form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.comment-form textarea {
+  resize: none;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+  height: 60px;
+}
+
+.comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.send-btn {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+}
+
+.send-btn:hover {
+  background: #0056b3;
+}
+
+/* -------- Sidebar derecha -------- */
+.sidebar-right {
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+#userList {
+  list-style: none;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.chat-panel {
+#userList li {
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  align-items: center;
+  gap: 8px;
+}
+
+#userList img {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
 }

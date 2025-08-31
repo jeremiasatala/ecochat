@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let token = '';
   let userId = '';
   let userAvatar = '';
-  let userCover = ''; // NUEVO: foto de portada del usuario
+  let userCover = ''; // Foto de portada
 
   // --- Escuchar actualización de usuarios ---
   socket.on('actualizar-usuarios', (usuarios) => {
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const userData = await userRes.json();
       userAvatar = userData.avatar || '';
-      userCover = userData.cover || ''; // NUEVO
+      userCover = userData.cover || '';
       if (userAvatar) document.getElementById('avatarPreview').src = userAvatar;
     } else {
       alert(data.error);
@@ -187,6 +187,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (data.avatar) {
       userAvatar = data.avatar;
       document.getElementById('avatarPreview').src = userAvatar;
+    }
+
+    alert(data.message);
+  });
+
+  // --- Subir cover ---
+  document.getElementById('subir-cover')?.addEventListener('click', async () => {
+    const fileInput = document.getElementById('cover');
+    const file = fileInput.files[0];
+    if (!file) return alert('Selecciona una imagen de portada');
+
+    const formData = new FormData();
+    formData.append('cover', file);
+    formData.append('userId', userId);
+
+    const res = await fetch('/upload-cover', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.cover) {
+      userCover = data.cover;
+      document.getElementById('coverPreview').style.backgroundImage = `url(${userCover})`;
     }
 
     alert(data.message);

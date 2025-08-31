@@ -8,61 +8,61 @@
 <body>
   <div class="layout">
 
-    <!-- Sidebar para registro/login -->
-    <div class="sidebar">
-      <div id="auth">
-        <h2>Registrarse</h2>
-        <input type="email" id="registerEmail" placeholder="Email">
-        <input type="password" id="registerPassword" placeholder="Contraseña">
-        <button id="registerBtn">Registrar</button>
-
-        <h2>Iniciar sesión</h2>
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPassword" placeholder="Contraseña">
-        <button id="loginBtn">Login</button>
+    <!-- Sidebar izquierda con perfil -->
+    <aside class="sidebar-left">
+      <div class="logo">
+        <img src="assets/logo.png" alt="EcoChat" class="logo-img">
+        <h2>Eco<br>Chat</h2>
       </div>
 
-      <!-- Perfil y subida de avatar -->
-      <div id="profile" class="hidden profile-form">
-        <h3>Perfil</h3>
-        <div class="file-upload">
-          <input type="file" id="avatar">
-          <button id="subir-avatar" class="upload-btn">Subir</button>
+      <div id="profile-card">
+        <!-- Portada -->
+        <div class="cover-photo">
+          <img id="coverPreview" src="assets/default-cover.jpg" alt="Portada">
         </div>
-        <img id="avatarPreview" class="upload-preview" src="assets/default-avatar.png" alt="Avatar">
-        <p id="userEmailDisplay"></p>
-      </div>
-    </div>
 
-    <!-- Chat principal -->
-    <div class="chat-panel" id="chatContainer" style="display:none;">
+        <!-- Avatar -->
+        <div class="avatar-container">
+          <img id="avatarPreview" src="assets/default-avatar.png" alt="Avatar" class="avatar">
+        </div>
+
+        <!-- Info de usuario -->
+        <div class="profile-info">
+          <h3 id="username">Invitado</h3>
+          <p id="bio">Bienvenido a EcoChat</p>
+
+          <div class="social-links">
+            <p><i class="fab fa-instagram"></i> <span id="insta">@user</span></p>
+            <p><i class="fab fa-twitter"></i> <span id="twitter">@user</span></p>
+          </div>
+
+          <p class="stats">Mensajes enviados: <span id="messageCount">0</span></p>
+          <button id="editProfileBtn">Editar Perfil</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Panel central: mensajes -->
+    <main class="chat-panel">
       <div id="chat"></div>
-      <div class="comment-form">
-        <textarea id="mensaje" placeholder="Escribe un mensaje..."></textarea>
-        <button id="enviar">➤</button>
-      </div>
-    </div>
 
-    <!-- Usuarios conectados -->
-    <div class="sidebar">
+      <div class="comment-form">
+        <textarea id="mensaje" maxlength="200" placeholder="Escribe un comentario..."></textarea>
+        <div class="comment-footer">
+          <span id="charCount">0/200</span>
+          <button id="enviar" class="send-btn">➤</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sidebar derecha (usuarios) -->
+    <aside class="sidebar-right">
       <h3>Usuarios</h3>
       <ul id="userList"></ul>
-    </div>
-
+    </aside>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
-  <script>
-    // Previsualización de avatar
-    const avatarInput = document.getElementById('avatar');
-    const avatarPreview = document.getElementById('avatarPreview');
-    avatarInput.addEventListener('change', () => {
-      const file = avatarInput.files[0];
-      if (file) {
-        avatarPreview.src = URL.createObjectURL(file);
-      }
-    });
-  </script>
 </body>
 </html>
