@@ -6,7 +6,7 @@ const path = require('path');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const fs = require('fs');
+const fs = require('fs'); // ← AÑADIDO
 const User = require('./models/user');
 
 // Asegurar que la carpeta de uploads existe
@@ -60,14 +60,10 @@ mongoose.connect(
 
 const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
 
-// Middleware de autenticación CORREGIDO
+// Middleware de autenticación
 const autenticar = (req, res, next) => {
-  // SOLO leer del header, no del body (porque con FormData el body no está parseado)
-  const token = req.headers['authorization'];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
+  const token = req.headers['authorization'] || req.body.token;
+  if (!token) return res.status(401).json({ error: 'No autenticado' });
 
   try {
     const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
@@ -104,7 +100,7 @@ app.post('/login', async (req, res) => {
     const token = jwt.sign({ 
       id: user._id, 
       email: user.email 
-    }, JWT_SECRET, { expiresIn: '7d' });
+    }, JWT_SECRET, { expiresIn: '7d' }); // Sesión de 7 días
 
     res.json({
       message: 'Login correcto',
@@ -227,110 +223,83 @@ const mensajeSchema = new mongoose.Schema({
 const Mensaje = mongoose.model('Mensaje', mensajeSchema);
 
 // Subir avatar - VERSIÓN CORREGIDA
-// --- Subir avatar ---
-document.getElementById('subir-avatar')?.addEventListener('click', async () => {
-  const fileInput = document.getElementById('avatar');
-  const file = fileInput.files[0];
-  if (!file) return alert('Selecciona una imagen');
-  if (!userId) return alert('Inicia sesión para subir avatar');
-
-  // Validar tipo de archivo
-  if (!file.type.startsWith('image/')) {
-    return alert('Solo se permiten archivos de imagen');
-  }
-
-  const formData = new FormData();
-  formData.append('avatar', file);
-  // REMOVER: formData.append('userId', userId); ← YA NO ES NECESARIO
-
+app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res) => {
   try {
-    const res = await fetch('/upload-avatar', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token // ← ¡AGREGAR ESTE HEADER!
-      },
-      body: formData
-    });
-    
-    const data = await res.json();
-    if (res.ok && data.avatar) {
-      userAvatar = data.avatar;
-      document.getElementById('avatarPreview').src = userAvatar;
-
-      // Actualizar localStorage
-      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
-      updatedUser.avatar = userAvatar;
-      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
-
-      socket.emit('actualizar-estado', {
-        id: userId,
-        email: userEmail,
-        username,
-        avatar: userAvatar,
-        cover: userCover
-      });
-      
-      alert('Avatar actualizado correctamente');
-    } else {
-      alert(data.error || 'Error al subir avatar');
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
     }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    // Ruta relativa para el frontend
+    user.avatar = '/uploads/' + req.file.filename;
+    await user.save();
+
+    // Actualizar mensajes existentes
+    await Mensaje.updateMany(
+      { usuario: user.username || user.email },
+      { $set: { avatar: user.avatar } }
+    );
+
+    io.emit('avatar-actualizado', { 
+      usuario: user.username || user.email, 
+      avatar: user.avatar 
+    });
+
+    res.json({ 
+      message: 'Avatar subido correctamente', 
+      avatar: user.avatar 
+    });
+
   } catch (err) {
-    console.error('upload avatar error', err);
-    alert('Error de conexión al subir avatar');
+    console.error('Error en upload-avatar:', err);
+    
+    // Eliminar archivo si hubo error
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ 
+      error: err.message || 'Error al subir el avatar' 
+    });
   }
 });
 
 // Subir cover - VERSIÓN CORREGIDA
-// --- Subir cover ---
-document.getElementById('subir-cover')?.addEventListener('click', async () => {
-  const fileInput = document.getElementById('cover');
-  const file = fileInput.files[0];
-  if (!file) return alert('Selecciona una imagen de portada');
-  if (!userId) return alert('Inicia sesión para subir portada');
-
-  // Validar tipo de archivo
-  if (!file.type.startsWith('image/')) {
-    return alert('Solo se permiten archivos de imagen');
-  }
-
-  const formData = new FormData();
-  formData.append('cover', file);
-  // REMOVER: formData.append('userId', userId); ← YA NO ES NECESARIO
-
+app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) => {
   try {
-    const res = await fetch('/upload-cover', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token // ← ¡AGREGAR ESTE HEADER!
-      },
-      body: formData
-    });
-    
-    const data = await res.json();
-    if (res.ok && data.cover) {
-      userCover = data.cover;
-      document.getElementById('coverPreview').src = userCover;
-
-      // Actualizar localStorage
-      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
-      updatedUser.cover = userCover;
-      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
-
-      socket.emit('actualizar-estado', {
-        id: userId,
-        email: userEmail,
-        username,
-        avatar: userAvatar,
-        cover: userCover
-      });
-      
-      alert('Portada actualizada correctamente');
-    } else {
-      alert(data.error || 'Error al subir portada');
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
     }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    user.cover = '/uploads/' + req.file.filename;
+    await user.save();
+
+    io.emit('cover-actualizado', { 
+      usuario: user.username || user.email, 
+      cover: user.cover 
+    });
+
+    res.json({ 
+      message: 'Portada subida correctamente', 
+      cover: user.cover 
+    });
+
   } catch (err) {
-    console.error('upload cover error', err);
-    alert('Error de conexión al subir portada');
+    console.error('Error en upload-cover:', err);
+    
+    // Eliminar archivo si hubo error
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    
+    res.status(500).json({ 
+      error: err.message || 'Error al subir la portada' 
+    });
   }
 });
 
@@ -523,7 +492,7 @@ setInterval(async () => {
     });
 
     const usuariosDB = await User.find({ 
-      $or: Object.keys(usuariosMap).length > 极 {
+      $or: Object.keys(usuariosMap).length > 0 ? [
         { username: { $in: Object.keys(usuariosMap) } },
         { email: { $in: Object.keys(usuariosMap) } }
       ] : [] 
@@ -559,7 +528,7 @@ setInterval(async () => {
   } catch (err) {
     console.error('Error en actualización periódica:', err);
   }
-}, 15000;
+}, 15000);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
