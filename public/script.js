@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const socket = io();
+
   const chat = document.getElementById('chat');
   const mensajeInput = document.getElementById('mensaje');
   const enviarBtn = document.getElementById('enviar');
@@ -12,146 +13,220 @@ document.addEventListener('DOMContentLoaded', () => {
   let token = '';
   let userId = '';
   let userAvatar = '';
-  let userCover = ''; // Foto de portada
+  let userCover = '';
 
-  // --- Escuchar actualización de usuarios ---
-  socket.on('actualizar-usuarios', (usuarios) => {
-    userList.innerHTML = ''; // Limpiar lista
+  // Debug: conexión socket
+  socket.on('connect', () => console.log('socket conectado', socket.id));
+  socket.on('connect_error', (err) => console.error('socket connect_error', err));
+
+  // contador de caracteres
+  const charCountEl = document.getElementById('charCount');
+  mensajeInput?.addEventListener('input', () => {
+    charCountEl && (charCountEl.textContent = `${mensajeInput.value.length}/200`);
+  });
+
+  // --- Render lista de usuarios (cover + avatar + email) ---
+  socket.on('actualizar-usuarios', (usuarios = []) => {
+    userList.innerHTML = '';
     usuarios.forEach(u => {
       const li = document.createElement('li');
+      li.style.display = 'flex';
+      li.style.flexDirection = 'column';
+      li.style.gap = '6px';
+      li.style.marginBottom = '8px';
+      li.style.borderRadius = '8px';
+      li.style.overflow = 'hidden';
+      li.style.background = '#fafafa';
+      li.style.padding = '6px';
 
-      // --- Cover Photo ---
       const coverDiv = document.createElement('div');
-      coverDiv.classList.add('cover-photo');
+      coverDiv.style.height = '60px';
       coverDiv.style.backgroundImage = `url(${u.cover || 'assets/default-cover.png'})`;
+      coverDiv.style.backgroundSize = 'cover';
+      coverDiv.style.backgroundPosition = 'center';
+      coverDiv.style.position = 'relative';
+      coverDiv.style.borderRadius = '6px';
 
-      // --- Avatar centrado ---
-      const avatarImg = document.createElement('img');
-      avatarImg.src = u.avatar || 'assets/default-avatar.png';
-      avatarImg.alt = u.email;
-      avatarImg.classList.add('avatar');
-      coverDiv.appendChild(avatarImg);
+      const avatar = document.createElement('img');
+      avatar.src = u.avatar || 'assets/default-avatar.png';
+      avatar.alt = u.email || 'Invitado';
+      avatar.style.width = '48px';
+      avatar.style.height = '48px';
+      avatar.style.borderRadius = '50%';
+      avatar.style.position = 'absolute';
+      avatar.style.left = '50%';
+      avatar.style.transform = 'translateX(-50%)';
+      avatar.style.bottom = '-20px';
+      avatar.style.border = '3px solid #fff';
+      avatar.style.objectFit = 'cover';
 
-      // --- Info (email o nombre) ---
-      const infoDiv = document.createElement('div');
-      infoDiv.classList.add('profile-info');
-      infoDiv.textContent = u.email;
+      coverDiv.appendChild(avatar);
 
-      // --- Añadir al li ---
+      const info = document.createElement('div');
+      info.style.marginTop = '26px';
+      info.style.textAlign = 'center';
+      info.style.fontSize = '13px';
+      info.textContent = u.email || 'Invitado';
+
       li.appendChild(coverDiv);
-      li.appendChild(infoDiv);
-
+      li.appendChild(info);
       userList.appendChild(li);
     });
   });
 
-  // --- Función para eliminar mensaje del DOM ---
-  function eliminarMensaje(div) {
-    div.classList.add('removing');
-    setTimeout(() => {
-      if (div.parentNode) div.parentNode.removeChild(div);
-    }, 300); // coincide con la animación
-  }
-
-  // --- Función para mantener el scroll abajo ---
+  // --- Mostrar mensajes en el DOM ---
   function scrollAbajo() {
     chat.scrollTop = chat.scrollHeight;
   }
 
-  // --- Funciones para mostrar mensajes ---
+  function eliminarMensaje(div) {
+    div.classList.add('removing');
+    setTimeout(() => div.remove(), 300);
+  }
+
   function agregarMensaje(m) {
     const div = document.createElement('div');
-    div.classList.add('comment');
+    div.className = 'comment';
+    div.style.display = 'flex';
+    div.style.alignItems = 'flex-start';
+    div.style.gap = '10px';
+    div.style.padding = '8px 12px';
+    div.style.borderRadius = '8px';
+    div.style.background = '#fff';
+    div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
-    avatarImg.alt = m.usuario;
-    avatarImg.classList.add('avatar');
+    avatarImg.alt = m.usuario || 'Invitado';
+    avatarImg.style.width = '40px';
+    avatarImg.style.height = '40px';
+    avatarImg.style.borderRadius = '50%';
+    avatarImg.style.objectFit = 'cover';
 
     const contenido = document.createElement('div');
     const hora = new Date(m.fecha).toLocaleTimeString();
-    contenido.textContent = `[${hora}] ${m.usuario}: ${m.texto}`;
+    const who = document.createElement('div');
+    who.style.fontSize = '13px';
+    who.style.fontWeight = '600';
+    who.textContent = `${m.usuario} • ${hora}`;
+    const text = document.createElement('div');
+    text.style.marginTop = '4px';
+    text.textContent = m.texto;
+
+    contenido.appendChild(who);
+    contenido.appendChild(text);
 
     div.appendChild(avatarImg);
     div.appendChild(contenido);
+
     chat.appendChild(div);
+    scrollAbajo();
 
-    scrollAbajo(); // Mantener scroll abajo
-
-    // Eliminar mensaje después de 60 segundos
-    const ahora = new Date();
-    const fechaMensaje = new Date(m.fecha);
-    const tiempoRestante = Math.max(0, 60000 - (ahora - fechaMensaje));
-    setTimeout(() => eliminarMensaje(div), tiempoRestante);
+    // Borrar después de 60s (coincide con TTL en servidor)
+    const ahora = Date.now();
+    const fecha = new Date(m.fecha).getTime();
+    const restante = Math.max(0, 60000 - (ahora - fecha));
+    setTimeout(() => eliminarMensaje(div), restante);
   }
 
-  // Cargar mensajes existentes
-  socket.on('cargar-mensajes', (mensajes) => {
-    chat.innerHTML = ''; // Limpiar antes de renderizar
+  socket.on('cargar-mensajes', (mensajes = []) => {
+    chat.innerHTML = '';
     mensajes.forEach(agregarMensaje);
     scrollAbajo();
   });
 
-  // Nuevo mensaje
-  socket.on('nuevo-mensaje', (m) => {
-    agregarMensaje(m);
+  socket.on('nuevo-mensaje', (m) => agregarMensaje(m));
+
+  // Cuando alguien actualiza avatar -> actualizar avatares en mensajes y lista
+  socket.on('avatar-actualizado', ({ usuario, avatar }) => {
+    // actualizar avatars en mensajes (por alt que es el email/nombre)
+    document.querySelectorAll('#chat img[alt]').forEach(img => {
+      if (img.alt === usuario) img.src = avatar || 'assets/default-avatar.png';
+    });
+    // actualizar la lista de usuarios (se volverá a emitir 'actualizar-usuarios' desde servidor normalmente)
   });
 
   // --- Registro ---
-  registerBtn.addEventListener('click', async () => {
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
+  if (registerBtn) {
+    registerBtn.addEventListener('click', async () => {
+      try {
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value.trim();
+        if (!email || !password) return alert('Completa email y contraseña');
 
-    const res = await fetch('/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert('Registrado. Iniciá sesión.');
+        } else {
+          alert(data.error || 'Error al registrar');
+        }
+      } catch (err) {
+        console.error('register error', err);
+        alert('Error en registro, mira la consola');
+      }
     });
-
-    const data = await res.json();
-    alert(data.message || data.error);
-  });
+  }
 
   // --- Login ---
-  loginBtn.addEventListener('click', async () => {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      try {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+        if (!email || !password) return alert('Completa email y contraseña');
 
-    const res = await fetch('/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.token) {
+          token = data.token;
+          userEmail = email;
+          // extraer id desde payload
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            userId = payload.id;
+          } catch (e) {
+            console.warn('No se pudo extraer userId del token', e);
+          }
+
+          // UI
+          document.getElementById('auth').style.display = 'none';
+          document.getElementById('profile').classList.remove('hidden');
+          document.getElementById('chatContainer').style.display = 'flex';
+          document.getElementById('userEmailDisplay').textContent = userEmail;
+
+          // obtener datos usuario
+          const userRes = await fetch(`/user/${userId}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const userData = await userRes.json();
+          userAvatar = userData.avatar || 'assets/default-avatar.png';
+          userCover = userData.cover || 'assets/default-cover.png';
+          document.getElementById('avatarPreview').src = userAvatar;
+          document.getElementById('coverPreview').src = userCover;
+        } else {
+          alert(data.error || 'Error al iniciar sesión');
+        }
+      } catch (err) {
+        console.error('login error', err);
+        alert('Error en login, mira la consola');
+      }
     });
-
-    const data = await res.json();
-    if (data.token) {
-      token = data.token;
-      userEmail = email;
-
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userId = payload.id;
-
-      document.getElementById('auth').style.display = 'none';
-      document.getElementById('chatContainer').style.display = 'flex';
-      document.getElementById('profile').classList.remove('hidden');
-      document.getElementById('userEmailDisplay').textContent = userEmail;
-
-      const userRes = await fetch(`/user/${userId}`, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      const userData = await userRes.json();
-      userAvatar = userData.avatar || '';
-      userCover = userData.cover || '';
-      if (userAvatar) document.getElementById('avatarPreview').src = userAvatar;
-    } else {
-      alert(data.error);
-    }
-  });
+  }
 
   // --- Enviar mensaje ---
-  enviarBtn.addEventListener('click', () => {
+  enviarBtn?.addEventListener('click', () => {
     const texto = mensajeInput.value.trim();
     if (!texto) return;
+    if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
 
     socket.emit('nuevo-mensaje', {
       usuario: userEmail || 'Invitado',
@@ -160,11 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     mensajeInput.value = '';
-    mensajeInput.focus();
+    charCountEl && (charCountEl.textContent = '0/200');
   });
 
-  // También enviar mensaje al presionar Enter
-  mensajeInput.addEventListener('keydown', (e) => {
+  // Enviar con Enter
+  mensajeInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       enviarBtn.click();
@@ -172,24 +247,28 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Subir avatar ---
-  document.getElementById('subir-avatar').addEventListener('click', async () => {
+  document.getElementById('subir-avatar')?.addEventListener('click', async () => {
     const fileInput = document.getElementById('avatar');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen');
+    if (!userId) return alert('Inicia sesión para subir avatar');
 
     const formData = new FormData();
     formData.append('avatar', file);
     formData.append('userId', userId);
 
-    const res = await fetch('/upload-avatar', { method: 'POST', body: formData });
-    const data = await res.json();
-
-    if (data.avatar) {
-      userAvatar = data.avatar;
-      document.getElementById('avatarPreview').src = userAvatar;
+    try {
+      const res = await fetch('/upload-avatar', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.avatar) {
+        userAvatar = data.avatar;
+        document.getElementById('avatarPreview').src = userAvatar;
+      }
+      alert(data.message || 'Avatar subido');
+    } catch (err) {
+      console.error('upload avatar error', err);
+      alert('Error subiendo avatar');
     }
-
-    alert(data.message);
   });
 
   // --- Subir cover ---
@@ -197,19 +276,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileInput = document.getElementById('cover');
     const file = fileInput.files[0];
     if (!file) return alert('Selecciona una imagen de portada');
+    if (!userId) return alert('Inicia sesión para subir portada');
 
     const formData = new FormData();
     formData.append('cover', file);
     formData.append('userId', userId);
 
-    const res = await fetch('/upload-cover', { method: 'POST', body: formData });
-    const data = await res.json();
-
-    if (data.cover) {
-      userCover = data.cover;
-      document.getElementById('coverPreview').style.backgroundImage = `url(${userCover})`;
+    try {
+      const res = await fetch('/upload-cover', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.cover) {
+        userCover = data.cover;
+        document.getElementById('coverPreview').src = userCover;
+      }
+      alert(data.message || 'Cover subido');
+    } catch (err) {
+      console.error('upload cover error', err);
+      alert('Error subiendo cover');
     }
-
-    alert(data.message);
   });
 });
