@@ -173,23 +173,22 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-      const loginUsername = document.getElementById('loginUsername').value.trim();
-      if (!email || !password || !loginUsername) return alert('Completa todos los campos');
+      if (!email || !password) return alert('Completa todos los campos');
 
       const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username: loginUsername })
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
       if (data.token) {
         token = data.token;
-        username = loginUsername;
         userEmail = email;
 
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           userId = payload.id;
+          username = payload.username || email;
         } catch (e) {
           console.warn('No se pudo extraer userId del token', e);
         }
@@ -198,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('auth').style.display = 'none';
         document.getElementById('profile').classList.remove('hidden');
         document.getElementById('chatContainer').style.display = 'flex';
-        document.getElementById('userEmailDisplay').textContent = username;
+        document.getElementById('usernameDisplay').textContent = username;
 
         // obtener datos usuario
         const userRes = await fetch(`/user/${userId}`, {
