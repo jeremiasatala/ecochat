@@ -5,7 +5,6 @@
   gap: 20px;
   padding: 20px;
   height: 92vh;
-  /*max-width: 1400px;*/
   margin: 0 auto;
 }
 
@@ -15,7 +14,6 @@
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  /*height: calc(100vh - 120px);*/
   overflow-y: auto;
 }
 
@@ -23,7 +21,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /*height: calc(100vh - 120px);*/
 }
 
 /* Chat central */
@@ -33,7 +30,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  /*height: calc(100vh - 60px);*/
 }
 
 #chat {
@@ -159,7 +155,7 @@
   padding: 12px;
   background: #f8f9fa;
   border-radius: 12px;
-  border-left: 4px solid #28a745;
+  border-left: 4px solid rgb(25,25,255);
 }
 
 /* Responsive */
@@ -323,3 +319,302 @@ html {
   transform: translateX(5px);
 }
 
+/* ===== FORMULARIOS MODERNOS (NUEVOS ESTILOS) ===== */
+.form-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e1e8ed;
+}
+
+.form-section h3 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Grupos de input mejorados */
+.input-group-modern {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-modern {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
+  background: #f8f9fa;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  outline: none;
+  color: #2c3e50;
+}
+
+.input-modern:focus {
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.input-modern::placeholder {
+  color: #a0aec0;
+}
+
+.input-label {
+  position: absolute;
+  top: -8px;
+  left: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #007bff;
+  background: #fff;
+  padding: 0 8px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+/* Botones modernos */
+.btn-modern {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-modern:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-modern:hover:before {
+  left: 100%;
+}
+
+.btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern:active {
+  transform: translateY(0);
+}
+
+.btn-primary-modern {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+}
+
+.btn-primary-modern:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+.btn-secondary-modern {
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: white;
+}
+
+.btn-secondary-modern:hover {
+  background: linear-gradient(135deg, #1e7e34, #145a23);
+}
+
+.btn-outline-modern {
+  background: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+}
+
+.btn-outline-modern:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-small-modern {
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* Divisor moderno */
+.divider-modern {
+  display: flex;
+  align-items: center;
+  margin: 25px 0;
+  color: #a0aec0;
+  font-size: 14px;
+}
+
+.divider-modern::before,
+.divider-modern::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e1e8ed, transparent);
+}
+
+.divider-modern span {
+  padding: 0 15px;
+  background: #fff;
+}
+
+/* Upload moderno */
+.upload-modern {
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.upload-modern:hover {
+  border-color: #007bff;
+  background: #e7f3ff;
+  transform: translateY(-1px);
+}
+
+.upload-modern.dragover {
+  border-color: #007bff;
+  background: #d4edff;
+}
+
+.upload-icon {
+  font-size: 24px;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.upload-text {
+  color: #4a5568;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.upload-subtext {
+  color: #a0aec0;
+  font-size: 12px;
+}
+
+.upload-preview {
+  margin-top: 15px;
+  max-width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-preview img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+/* Grupo de botones de upload */
+.upload-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+/* Animaciones */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.btn-modern {
+  animation: pulse 2s infinite;
+}
+
+.btn-modern:hover {
+  animation: none;
+}
+
+/* Estados de carga */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+}
+
+.btn-loading:after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Efectos de focus mejorados */
+.input-modern:focus + .input-label {
+  color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Validación visual */
+.input-modern.error {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+.input-modern.success {
+  border-color: #38a169;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+}
+
+/* Responsive para formularios modernos */
+@media (max-width: 768px) {
+  .form-section {
+    padding: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .input-modern {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .btn-modern {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+  
+  .upload-actions {
+    flex-direction: column;
+  }
+  
+  .upload-modern {
+    padding: 15px;
+  }
+}
