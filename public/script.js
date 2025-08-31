@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatar = document.createElement('img');
       avatar.src = u.avatar || 'assets/default-avatar.png';
-      avatar.alt = u.username || u.email;
+      avatar.alt = u.username || u.email || 'Invitado'; // <--- cambio mínimo
       avatar.style.width = '48px';
       avatar.style.height = '48px';
       avatar.style.borderRadius = '50%';
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       info.style.marginTop = '26px';
       info.style.textAlign = 'center';
       info.style.fontSize = '13px';
-      info.textContent = u.username || u.email;
+      info.textContent = u.username?.trim() ? u.username : u.email; // <--- cambio mínimo
 
       li.appendChild(coverDiv);
       li.appendChild(info);
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
-    avatarImg.alt = m.username || m.usuario || m.email || '';
+    avatarImg.alt = m.username || m.usuario || m.email || 'Invitado'; // <--- cambio mínimo
     avatarImg.style.width = '40px';
     avatarImg.style.height = '40px';
     avatarImg.style.borderRadius = '50%';
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const who = document.createElement('div');
     who.style.fontSize = '13px';
     who.style.fontWeight = '600';
-    who.textContent = `${m.username || m.usuario || m.email} • ${hora}`;
+    who.textContent = `${m.username || m.usuario || m.email || 'Invitado'} • ${hora}`; // <--- cambio mínimo
     const text = document.createElement('div');
     text.style.marginTop = '4px';
     text.textContent = m.texto;
@@ -207,15 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         userAvatar = userData.avatar || 'assets/default-avatar.png';
         userCover = userData.cover || 'assets/default-cover.png';
+        username = userData.username || username; // <--- asegurarse de usar username real
 
         document.getElementById('avatarPreview').src = userAvatar;
         document.getElementById('coverPreview').src = userCover;
+        document.getElementById('usernameDisplay').textContent = username;
 
-        // actualizar estado en socket con username real
+        // actualizar estado en socket
         socket.emit('actualizar-estado', {
           id: userId,
           email: userEmail,
-          username,      // <-- asegurarse de usar el username real
+          username,
           avatar: userAvatar,
           cover: userCover
         });
