@@ -18,17 +18,34 @@
       <!-- AUTH (mostrar por defecto) -->
       <div id="auth">
         <h3>Registrarse</h3>
-        <input id="registerUsername" type="text" placeholder="Nombre de usuario">
-        <input id="registerEmail" type="email" placeholder="Email">
-        <input id="registerPassword" type="password" placeholder="Contraseña">
-        <button id="registerBtn">Registrar</button>
+        <div class="input-group">
+          <input id="registerUsername" type="text" placeholder=" " class="modern-input">
+          <label for="registerUsername">Nombre de usuario</label>
+        </div>
+        <div class="input-group">
+          <input id="registerEmail" type="email" placeholder=" " class="modern-input">
+          <label for="registerEmail">Email</label>
+        </div>
+        <div class="input-group">
+          <input id="registerPassword" type="password" placeholder=" " class="modern-input">
+          <label for="registerPassword">Contraseña</label>
+        </div>
+        <button id="registerBtn" class="modern-btn primary">Crear cuenta</button>
 
-        <hr style="margin:10px 0">
+        <div class="divider">
+          <span>o</span>
+        </div>
 
         <h3>Iniciar sesión</h3>
-        <input id="loginEmail" type="email" placeholder="Email">
-        <input id="loginPassword" type="password" placeholder="Contraseña">
-        <button id="loginBtn">Login</button>
+        <div class="input-group">
+          <input id="loginEmail" type="email" placeholder=" " class="modern-input">
+          <label for="loginEmail">Email</label>
+        </div>
+        <div class="input-group">
+          <input id="loginPassword" type="password" placeholder=" " class="modern-input">
+          <label for="loginPassword">Contraseña</label>
+        </div>
+        <button id="loginBtn" class="modern-btn secondary">Ingresar</button>
       </div>
 
       <!-- Perfil (oculto hasta login) -->
@@ -46,25 +63,41 @@
             <h3 id="usernameDisplay">Invitado</h3>
             <p id="bio">Bienvenido a EcoChat</p>
             <p class="stats">Mensajes enviados: <span id="messageCount">0</span></p>
-            <button id="editProfileBtn">Editar Perfil</button>
+            <button id="editProfileBtn" class="modern-btn outline">Editar Perfil</button>
           </div>
         </div>
 
-        <hr style="margin:10px 0">
-
-        <div>
-          <label>Nombre de usuario</label><br>
-          <input id="editUsername" type="text" placeholder="Nuevo nombre de usuario">
+        <div class="divider">
+          <span>Editar información</span>
         </div>
 
-        <div style="margin-top:8px;">
-          <label>Avatar</label><br>
-          <input id="avatar" type="file" accept="image/*"><button id="subir-avatar" class="upload-btn">Subir</button>
+        <div class="input-group">
+          <input id="editUsername" type="text" placeholder=" " class="modern-input">
+          <label for="editUsername">Nombre de usuario</label>
         </div>
 
-        <div style="margin-top:8px;">
-          <label>Cover</label><br>
-          <input id="cover" type="file" accept="image/*"><button id="subir-cover" class="upload-btn">Subir portada</button>
+        <div class="file-upload-group">
+          <label>Avatar</label>
+          <div class="file-input-container">
+            <input id="avatar" type="file" accept="image/*" class="file-input">
+            <label for="avatar" class="file-input-label">
+              <span class="file-input-text">Seleccionar imagen</span>
+              <span class="file-input-button">Examinar</span>
+            </label>
+            <button id="subir-avatar" class="modern-btn small">Subir</button>
+          </div>
+        </div>
+
+        <div class="file-upload-group">
+          <label>Foto de portada</label>
+          <div class="file-input-container">
+            <input id="cover" type="file" accept="image/*" class="file-input">
+            <label for="cover" class="file-input-label">
+              <span class="file-input-text">Seleccionar imagen</span>
+              <span class="file-input-button">Examinar</span>
+            </label>
+            <button id="subir-cover" class="modern-btn small">Subir</button>
+          </div>
         </div>
       </div>
 

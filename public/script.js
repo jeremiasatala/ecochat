@@ -16,6 +16,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let userAvatar = 'assets/default-avatar.png';
   let userCover = 'assets/default-cover.png';
 
+  // --- Manejar inputs modernos ---
+  document.querySelectorAll('.modern-input').forEach(input => {
+    input.addEventListener('focus', () => {
+      input.parentElement.classList.add('focused');
+    });
+    
+    input.addEventListener('blur', () => {
+      if (!input.value) {
+        input.parentElement.classList.remove('focused');
+      }
+    });
+    
+    // Inicializar estado
+    if (input.value) {
+      input.parentElement.classList.add('focused');
+    }
+  });
+
   // --- Debug socket ---
   socket.on('connect', () => console.log('socket conectado', socket.id));
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
@@ -50,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatar = document.createElement('img');
       avatar.src = u.avatar || 'assets/default-avatar.png';
-      avatar.alt = u.username || u.email || 'Invitado'; // <--- cambio mínimo
+      avatar.alt = u.username || u.email || 'Invitado';
       avatar.style.width = '48px';
       avatar.style.height = '48px';
       avatar.style.borderRadius = '50%';
@@ -67,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
       info.style.marginTop = '26px';
       info.style.textAlign = 'center';
       info.style.fontSize = '13px';
-      info.textContent = u.username?.trim() ? u.username : u.email; // <--- cambio mínimo
+      info.textContent = u.username?.trim() ? u.username : u.email;
 
       li.appendChild(coverDiv);
       li.appendChild(info);
@@ -98,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const avatarImg = document.createElement('img');
     avatarImg.src = m.avatar || 'assets/default-avatar.png';
-    avatarImg.alt = m.username || m.usuario || m.email || 'Invitado'; // <--- cambio mínimo
+    avatarImg.alt = m.username || m.usuario || m.email || 'Invitado';
     avatarImg.style.width = '40px';
     avatarImg.style.height = '40px';
     avatarImg.style.borderRadius = '50%';
@@ -109,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const who = document.createElement('div');
     who.style.fontSize = '13px';
     who.style.fontWeight = '600';
-    who.textContent = `${m.username || m.usuario || m.email || 'Invitado'} • ${hora}`; // <--- cambio mínimo
+    who.textContent = `${m.username || m.usuario || m.email || 'Invitado'} • ${hora}`;
     const text = document.createElement('div');
     text.style.marginTop = '4px';
     text.textContent = m.texto;
@@ -207,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         userAvatar = userData.avatar || 'assets/default-avatar.png';
         userCover = userData.cover || 'assets/default-cover.png';
-        username = userData.username || username; // <--- asegurarse de usar username real
+        username = userData.username || username;
 
         document.getElementById('avatarPreview').src = userAvatar;
         document.getElementById('coverPreview').src = userCover;
