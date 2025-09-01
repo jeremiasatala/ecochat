@@ -34,48 +34,62 @@ document.addEventListener('DOMContentLoaded', async () => {
   let usersData = {};
 
   let puedeEnviar = true; // ⭐ Variable de control (limpiar token del lado del cliente)
-  function enviarMensaje(e) {
-    if (e) e.preventDefault(); // Prevenir comportamiento por defecto
-    if (!puedeEnviar) return;
-    
-    // Establecer control de envío inmediatamente
-    puedeEnviar = false;
-    enviarBtn.disabled = true;
-    
-    const texto = mensajeInput.value.trim();
-    if (!texto) {
-      // Si no hay texto, permitir enviar de nuevo
-      puedeEnviar = true;
-      enviarBtn.disabled = false;
-      return;
-    }
-    
-    if (!socket || !socket.connected) {
-      alert('Socket no conectado, recarga la página');
-      // Permitir enviar de nuevo después del alert
-      puedeEnviar = true;
-      enviarBtn.disabled = false;
-      return;
-    }
-    
-    socket.emit('nuevo-mensaje', {
-      usuario: userEmail || 'Invitado',
-      username: username || 'Invitado',
-      texto,
-      avatar: userAvatar,
-      cover: userCover,
-      token
-    });
-
-    mensajeInput.value = '';
-    charCountEl && (charCountEl.textContent = '0/200');
-    
-    // Rehabilitar después de 1 segundo
-    setTimeout(() => {
-      puedeEnviar = true;
-      enviarBtn.disabled = false;
-    }, 1000);
+function enviarMensaje(e) {
+  console.log('🔵 Función enviarMensaje llamada', new Date().toISOString());
+  if (e) {
+    e.preventDefault();
+    console.log('✅ Evento prevenido');
   }
+  
+  if (!puedeEnviar) {
+    console.log('🚫 Envío bloqueado: puedeEnviar = false');
+    return;
+  }
+  
+  // Establecer control de envío inmediatamente
+  puedeEnviar = false;
+  enviarBtn.disabled = true;
+  console.log('🔒 Bloqueando envíos adicionales');
+  
+  const texto = mensajeInput.value.trim();
+  console.log('📝 Texto a enviar:', texto);
+  
+  if (!texto) {
+    console.log('❌ Texto vacío, cancelando envío');
+    puedeEnviar = true;
+    enviarBtn.disabled = false;
+    return;
+  }
+  
+  if (!socket || !socket.connected) {
+    console.log('❌ Socket no conectado');
+    alert('Socket no conectado, recarga la página');
+    puedeEnviar = true;
+    enviarBtn.disabled = false;
+    return;
+  }
+  
+  console.log('📤 Emitiendo mensaje via socket');
+  socket.emit('nuevo-mensaje', {
+    usuario: userEmail || 'Invitado',
+    username: username || 'Invitado',
+    texto,
+    avatar: userAvatar,
+    cover: userCover,
+    token
+  });
+
+  mensajeInput.value = '';
+  charCountEl && (charCountEl.textContent = '0/200');
+  console.log('✅ Mensaje enviado, limpiando campo');
+  
+  // Rehabilitar después de 1 segundo
+  setTimeout(() => {
+    puedeEnviar = true;
+    enviarBtn.disabled = false;
+    console.log('🔓 Envíos habilitados nuevamente');
+  }, 1000);
+}
 
   // --- FUNCIONES DE INTERFAZ ---
   function showLoginForm() {
@@ -329,12 +343,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
 
   // contador de caracteres
-  mensajeInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      enviarMensaje(e); // Pasar el evento
-    }
-  });
+mensajeInput?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    console.log('⌨️ Tecla Enter presionada');
+    e.preventDefault();
+    enviarMensaje(e);
+  }
+});
 
   // --- Render lista de usuarios ---
   socket.on('actualizar-usuarios', (usuarios = []) => {
@@ -530,7 +545,14 @@ async function inspeccionarPerfil(usernameOrEmail) {
     scrollAbajo();
   });
 
-  socket.on('nuevo-mensaje', (m) => agregarMensaje(m));
+socket.on('nuevo-mensaje', (m) => {
+  console.log('📩 Mensaje recibido del servidor:', {
+    usuario: m.usuario,
+    texto: m.texto,
+    timestamp: new Date().toISOString()
+  });
+  agregarMensaje(m);
+});
 
   socket.on('avatar-actualizado', ({ usuario, username, avatar }) => {
     document.querySelectorAll('#chat img[alt]').forEach(img => {
@@ -628,7 +650,11 @@ loginBtn?.addEventListener('click', async () => {
   }
 });
 
-enviarBtn?.addEventListener('click', (e) => enviarMensaje(e));
+/*enviarBtn?.addEventListener('click', (e) => enviarMensaje(e));*/
+enviarBtn?.addEventListener('click', (e) => {
+  console.log('🖱️ Click en botón enviar');
+  enviarMensaje(e);
+});
 
   // --- Subir avatar ---
   document.getElementById('subir-avatar')?.addEventListener('click', async () => {
