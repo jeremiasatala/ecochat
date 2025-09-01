@@ -668,3 +668,55 @@ html {
     min-height: 60px;
   }
 }
+
+/* ===== ESTILOS PARA BOTONES DE PERFIL EN HORIZONTAL ===== */
+#profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: space-between;
+}
+
+#editProfileBtn, 
+#logoutBtn {
+  width: 48% !important; /* Ambos botones ocuparán casi la mitad del espacio */
+  margin-top: 0 !important;
+  margin: 0;
+}
+
+/* Asegurar que los botones se vean bien en móviles */
+@media (max-width: 768px) {
+  #profile-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  #editProfileBtn, 
+  #logoutBtn {
+    width: 100% !important;
+  }
+}
+
+/* Estilos específicos para el botón de logout */
+#logoutBtn {
+  background: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: white !important;
+}
+
+#logoutBtn:hover {
+  background: #c82333 !important;
+  border-color: #c82333 !important;
+}
+
+/* Estilos para el botón de editar perfil */
+#editProfileBtn {
+  background: transparent !important;
+  border: 2px solid #007bff !important;
+  color: #007bff !important;
+}
+
+#editProfileBtn:hover {
+  background: #007bff !important;
+  color: white !important;
+}
