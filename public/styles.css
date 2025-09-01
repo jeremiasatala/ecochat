@@ -413,7 +413,6 @@ html {
 }
 
 .btn-modern:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
@@ -539,20 +538,6 @@ html {
   margin-top: 15px;
 }
 
-/* Animaciones */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-  100% { transform: scale(1); }
-}
-
-.btn-modern {
-  animation: pulse 2s infinite;
-}
-
-.btn-modern:hover {
-  animation: none;
-}
 
 /* Estados de carga */
 .btn-loading {
@@ -677,4 +662,4 @@ html {
   #editBio {
     min-height: 60px;
   }
-}
+}text
