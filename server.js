@@ -13,6 +13,14 @@ const User = require('./models/user');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+  }
+  next();
+});
+
 const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
 
 // ⭐⭐ NUEVO: Mapa para usuarios conectados
