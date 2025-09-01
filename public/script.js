@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   const socket = io();
 
@@ -491,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
- // --- Login ---
+// --- Login CORREGIDO ---
 loginBtn?.addEventListener('click', async () => {
   try {
     const email = document.getElementById('loginEmail').value.trim();
@@ -504,7 +506,6 @@ loginBtn?.addEventListener('click', async () => {
       body: JSON.stringify({ email, password })
     });
     
-    // ← AÑADE ESTA VALIDACIÓN ANTES DE PROCESAR LA RESPUESTA →
     if (!res.ok) {
       const errorData = await res.json();
       throw new Error(errorData.error || 'Error en login');
@@ -517,10 +518,14 @@ loginBtn?.addEventListener('click', async () => {
       localStorage.setItem('ecochat_token', data.token);
       localStorage.setItem('ecochat_user', JSON.stringify(data.user));
 
+      // Usar los datos de la respuesta del login DIRECTAMENTE
       token = data.token;
-      userEmail = data.user.email; // ← Usar el email de la respuesta
-      userId = data.user.id;       // ← Usar el ID de la respuesta, NO del token
-      username = data.user.username || data.user.email; // ← Usar username de la respuesta
+      userEmail = data.user.email;
+      userId = data.user.id;
+      username = data.user.username || data.user.email;
+      userAvatar = data.user.avatar || 'assets/default-avatar.png';
+      userCover = data.user.cover || 'assets/default-cover.png';
+      userBio = data.user.bio || 'Bienvenido a EcoChat';
 
       // Actualizar UI
       authButtons.classList.add('hidden');
@@ -529,32 +534,8 @@ loginBtn?.addEventListener('click', async () => {
       
       document.getElementById('usernameDisplay').textContent = username;
       document.getElementById('editUsername').value = username || '';
-
-      // Obtener datos adicionales del usuario
-      try {
-        const userRes = await fetch(`/user/${userId}`, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          userAvatar = userData.avatar || 'assets/default-avatar.png';
-          userCover = userData.cover || 'assets/default-cover.png';
-          userBio = userData.bio || 'Bienvenido a EcoChat';
-        }
-      } catch (err) {
-        console.warn('Error obteniendo datos adicionales:', err);
-        // Usar valores por defecto si falla
-        userAvatar = data.user.avatar || 'assets/default-avatar.png';
-        userCover = data.user.cover || 'assets/default-cover.png';
-        userBio = data.user.bio || 'Bienvenido a EcoChat';
-      }
-
-      // Actualizar la interfaz
       document.getElementById('avatarPreview').src = userAvatar;
       document.getElementById('coverPreview').src = userCover;
-      document.getElementById('usernameDisplay').textContent = username;
-      console.log('Bio actualizada 3:', userBio);
       document.getElementById('bio').textContent = userBio;
 
       // Actualizar estado en socket
