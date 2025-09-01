@@ -9,25 +9,33 @@ const multer = require('multer');
 const fs = require('fs');
 const User = require('./models/user');
 
-// Asegurar que la carpeta de uploads existe
-const uploadsDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('Carpeta uploads creada:', uploadsDir);
-}
+// Configuración inicial
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
 
-// Configuración mejorada de Multer
+// Middleware
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
+
+// Conexión a MongoDB
+mongoose.connect(
+  'mongodb+srv://jeruxo:cMD9Jc0BR1SGZLg8@cluster0.h1dg0y8.mongodb.net/chatGlobal?retryWrites=true&w=majority'
+)
+.then(() => console.log('MongoDB conectado'))
+.catch(err => console.error('Error conectando a MongoDB:', err));
+
+// Configuración de Multer para subida de archivos
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = 'public/uploads/';
-    // Crear directorio si no existe
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Nombre único para el archivo
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
@@ -35,9 +43,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB límite
-  },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
@@ -47,24 +53,7 @@ const upload = multer({
   }
 });
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-
-// Servir archivos estáticos CORREGIDO
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-
-mongoose.connect(
-  'mongodb+srv://jeruxo:cMD9Jc0BR1SGZLg8@cluster0.h1dg0y8.mongodb.net/chatGlobal?retryWrites=true&w=majority'
-)
-  .then(() => console.log('MongoDB conectado'))
-  .catch(err => console.error('Error conectando a MongoDB:', err));
-
-const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
-
-// Middleware de autenticación CORREGIDO
+// Middleware de autenticación
 const autenticar = (req, res, next) => {
   let token = req.headers['authorization'] || req.body.token || req.query.token;
   
@@ -82,15 +71,28 @@ const autenticar = (req, res, next) => {
   }
 };
 
-// Registro - CORREGIDO
+// Esquema y modelo de Mensajes
+const mensajeSchema = new mongoose.Schema({
+  usuario: String,
+  email: String,
+  texto: String,
+  avatar: String,
+  fecha: { type: Date, default: Date.now, expires: 60 }
+});
+
+const Mensaje = mongoose.model('Mensaje', mensajeSchema);
+
+// --- RUTAS DE LA API ---
+
+// Registro
 app.post('/register', async (req, res) => {
   try {
-    const { email, password, username, bio } = req.body; // ← AÑADIR bio
+    const { email, password, username, bio } = req.body;
     const user = new User({ 
       email, 
       password, 
       username, 
-      bio: bio || 'Bienvenido a EcoChat' // ← AÑADIR bio con valor por defecto
+      bio: bio || 'Bienvenido a EcoChat'
     });
     await user.save();
     res.json({ message: 'Usuario creado correctamente' });
@@ -99,7 +101,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Login - MEJORADO
+// Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -123,7 +125,7 @@ app.post('/login', async (req, res) => {
         username: user.username || '',
         avatar: user.avatar || '/assets/default-avatar.png',
         cover: user.cover || '/assets/default-cover.png',
-        bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
+        bio: user.bio || 'Bienvenido a EcoChat'
       }
     });
   } catch (err) {
@@ -131,7 +133,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Verificar token - MEJORADO
+// Verificar token
 app.post('/verify-token', async (req, res) => {
   try {
     const { token } = req.body;
@@ -147,54 +149,17 @@ app.post('/verify-token', async (req, res) => {
       valid: true,
       userId: user._id,
       email: user.email,
-      username: user.username || '', // ← Añadir username
+      username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png',
       cover: user.cover || '/assets/default-cover.png',
-      bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
+      bio: user.bio || 'Bienvenido a EcoChat'
     });
   } catch (err) {
     res.status(401).json({ error: 'Token inválido', valid: false });
   }
 });
 
-// Obtener usuario por ID
-app.get('/user/:id', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    res.json({ 
-      email: user.email,
-      username: user.username || '',
-      avatar: user.avatar || '/assets/default-avatar.png', 
-      cover: user.cover || '/assets/default-cover.png',
-      bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Error al obtener usuario' });
-  }
-});
-
-// Obtener perfil del usuario autenticado
-app.get('/profile', autenticar, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    
-    res.json({ 
-      email: user.email,
-      username: user.username || '',
-      avatar: user.avatar || '/assets/default-avatar.png', 
-      cover: user.cover || '/assets/default-cover.png',
-      bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
-      messageCount: 0,
-      lastSeen: new Date().toLocaleString()
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'Error al obtener perfil' });
-  }
-});
-
-// Obtener usuario por email (para el inspector)
+// Obtener usuario por email
 app.get('/user-by-email/:email', async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
@@ -204,28 +169,12 @@ app.get('/user-by-email/:email', async (req, res) => {
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png',
-      bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
+      bio: user.bio || 'Bienvenido a EcoChat',
       messageCount: 0,
       lastSeen: new Date().toLocaleString()
     });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
-  }
-});
-
-// Actualizar username
-app.post('/set-username', autenticar, async (req, res) => {
-  try {
-    const { username } = req.body;
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
-
-    user.username = username;
-    await user.save();
-
-    res.json({ message: 'Username actualizado', username: user.username });
-  } catch (err) {
-    res.status(500).json({ error: 'Error al actualizar username' });
   }
 });
 
@@ -245,18 +194,7 @@ app.post('/set-bio', autenticar, async (req, res) => {
   }
 });
 
-// Mensajes  ⟵ REEMPLAZAR COMPLETO ESTE BLOQUE
-const mensajeSchema = new mongoose.Schema({
-  usuario: String,
-  email: String,
-  texto: String,
-  avatar: String,
-  fecha: { type: Date, default: Date.now, expires: 60 }
-});
-
-const Mensaje = mongoose.model('Mensaje', mensajeSchema);
-
-// Subir avatar - CORREGIDO  ⟵ REEMPLAZAR COMPLETO ESTE HANDLER
+// Subir avatar
 app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
@@ -269,19 +207,16 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
     user.avatar = '/uploads/' + req.file.filename;
     await user.save();
 
-    // ⬇️ CAMBIO: actualizamos mensajes por email (clave estable).
-    // Incluimos OR por 'usuario' para mensajes antiguos (compatibilidad hacia atrás).
     await Mensaje.updateMany(
       { $or: [
           { email: user.email },
-          { usuario: user.username || '__never__' }, // fallback por si hubo mensajes sin email
-          { usuario: user.email }                    // otro posible valor antiguo
+          { usuario: user.username || '__never__' },
+          { usuario: user.email }
       ]},
       { $set: { avatar: user.avatar } }
     );
 
     io.emit('avatar-actualizado', { 
-      // mantenemos 'usuario' por compatibilidad con el cliente actual
       usuario: user.username || user.email, 
       avatar: user.avatar 
     });
@@ -296,7 +231,7 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
   }
 });
 
-// Subir cover - CORREGIDO
+// Subir cover
 app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) => {
   try {
     if (!req.file) {
@@ -323,54 +258,47 @@ app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) =
     res.status(500).json({ error: 'Error al subir la imagen' });
   }
 });
-// Logout (limpiar token del lado del cliente)
-app.post('/logout', autenticar, (req, res) => {
-  res.json({ message: 'Sesión cerrada correctamente' });
-});
 
-// Socket.io
+// --- SOCKET.IO HANDLERS ---
+
+// Función para actualizar lista de usuarios
+const actualizarListaUsuarios = async () => {
+  try {
+    const mensajes = await Mensaje.find().sort({ fecha: 1 }).limit(100);
+    
+    const emailsUnicos = new Set();
+    mensajes.forEach(m => {
+      if (m.email) emailsUnicos.add(m.email);
+    });
+
+    const usuariosDB = await User.find({ 
+      email: { $in: Array.from(emailsUnicos) } 
+    });
+
+    const usuariosPorEmail = {};
+    usuariosDB.forEach(u => {
+      usuariosPorEmail[u.email] = {
+        email: u.email,
+        username: u.username || u.email,
+        avatar: u.avatar || '/assets/default-avatar.png',
+        cover: u.cover || '/assets/default-cover.png',
+        bio: u.bio || 'Bienvenido a EcoChat',
+        messageCount: 0,
+        lastSeen: 'En línea'
+      };
+    });
+
+    io.emit('actualizar-usuarios', Object.values(usuariosPorEmail));
+  } catch (err) {
+    console.error('Error al actualizar lista de usuarios:', err);
+  }
+};
+
+// Conexiones de Socket.io
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
-  // Función para emitir usuarios actualizados
-  const actualizarListaUsuarios = async () => {
-    try {
-      // Obtener todos los mensajes para extraer usuarios únicos
-      const mensajes = await Mensaje.find().sort({ fecha: 1 }).limit(100);
-      
-      // Extraer emails únicos de los mensajes
-      const emailsUnicos = new Set();
-      mensajes.forEach(m => {
-        if (m.email) emailsUnicos.add(m.email);
-      });
-
-      // Buscar usuarios en la DB por email
-      const usuariosDB = await User.find({ 
-        email: { $in: Array.from(emailsUnicos) } 
-      });
-
-      // Crear mapa de usuarios por email para fácil acceso
-      const usuariosPorEmail = {};
-      usuariosDB.forEach(u => {
-        usuariosPorEmail[u.email] = {
-          email: u.email,
-          username: u.username || u.email,
-          avatar: u.avatar || '/assets/default-avatar.png',
-          cover: u.cover || '/assets/default-cover.png',
-          bio: u.bio || 'Bienvenido a EcoChat',
-          messageCount: 0,
-          lastSeen: 'En línea'
-        };
-      });
-
-      // Emitir lista de usuarios actualizada
-      io.emit('actualizar-usuarios', Object.values(usuariosPorEmail));
-    } catch (err) {
-      console.error('Error al actualizar lista de usuarios:', err);
-    }
-  };
-
-  // Cargar mensajes iniciales y lista de usuarios
+  // Cargar mensajes iniciales
   (async () => {
     try {
       const mensajes = await Mensaje.find().sort({ fecha: 1 }).limit(100);
@@ -381,7 +309,14 @@ io.on('connection', (socket) => {
     }
   })();
 
+  // Handler para nuevos mensajes - CORREGIDO
   socket.on('nuevo-mensaje', async (data) => {
+    console.log('📨 Mensaje recibido en servidor:', {
+      usuario: data.usuario,
+      texto: data.texto,
+      timestamp: new Date().toISOString()
+    });
+    
     try {
       const { texto, token } = data;
       let userAvatar = '/assets/default-avatar.png';
@@ -403,121 +338,44 @@ io.on('connection', (socket) => {
             userEmail = user.email;
           }
         } catch (tokenError) {
-          console.log('Token inválido para mensaje:', tokenError.message);
+          console.log('❌ Token inválido para mensaje:', tokenError.message);
         }
       }
 
       // Crear y guardar mensaje
       const mensaje = new Mensaje({ 
         usuario: displayName,
-        email: userEmail, // ← AÑADIR EMAIL AL MENSAJE
+        email: userEmail,
         texto, 
         avatar: userAvatar 
       });
       
       await mensaje.save();
+      console.log('💾 Mensaje guardado en BD:', mensaje._id);
       
-      // Emitir mensaje con email incluido
-      io.emit('nuevo-mensaje', { 
-        ...mensaje.toObject(), 
-        email: userEmail 
-      });
+      // SOLUCIÓN CRÍTICA: Emitir solo UNA vez
+      // Crear un objeto de mensaje único para evitar duplicados
+      const mensajeParaEmitir = {
+        _id: mensaje._id,
+        usuario: displayName,
+        email: userEmail,
+        texto: texto,
+        avatar: userAvatar,
+        fecha: mensaje.fecha,
+        __emitted: true // Marcar como emitido
+      };
+      
+      io.emit('nuevo-mensaje', mensajeParaEmitir);
+      console.log('📢 Mensaje emitido a todos los clientes');
 
       // Actualizar lista de usuarios
       await actualizarListaUsuarios();
     } catch (err) {
-      console.log('Error al crear mensaje:', err.message);
+      console.log('❌ Error al crear mensaje:', err.message);
     }
   });
 
-  socket.on('nuevo-mensaje', async (data) => {
-    try {
-      const { texto, token } = data;
-      let userAvatar = '/assets/default-avatar.png';
-      let userCover = '/assets/default-cover.png';
-      let displayName = 'Invitado';
-      let userEmail = 'invitado@ejemplo.com';
-
-      if (token) {
-        try {
-          const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
-          const decoded = jwt.verify(cleanToken, JWT_SECRET);
-          const user = await User.findById(decoded.id);
-          
-          if (user) {
-            userAvatar = user.avatar || '/assets/default-avatar.png';
-            userCover = user.cover || '/assets/default-cover.png';
-            displayName = user.username || user.email;
-            userEmail = user.email;
-          }
-        } catch (tokenError) {
-          console.log('Token inválido para mensaje:', tokenError.message);
-        }
-      }
-
-      const mensaje = new Mensaje({ 
-        usuario: displayName, 
-        texto, 
-        avatar: userAvatar 
-      });
-      
-      await mensaje.save();
-      io.emit('nuevo-mensaje', { ...mensaje.toObject(), email: userEmail });
-
-      // Actualizar lista de usuarios
-      const mensajesActuales = await Mensaje.find();
-      const usuariosMap = {};
-      const usuariosInfo = {};
-      
-      mensajesActuales.forEach(m => {
-        usuariosMap[m.usuario] = { 
-          avatar: m.avatar || '/assets/default-avatar.png', 
-          cover: '' 
-        };
-      });
-
-      const usuariosDB = await User.find({ 
-        $or: Object.keys(usuariosMap).length > 0 ? [
-          { username: { $in: Object.keys(usuariosMap) } },
-          { email: { $in: Object.keys(usuariosMap) } }
-        ] : [] 
-      });
-      
-      usuariosDB.forEach(u => {
-        const key = u.username || u.email;
-        if (usuariosMap[key]) {
-          usuariosMap[key].cover = u.cover || '/assets/default-cover.png';
-        }
-        
-        usuariosInfo[key] = {
-          email: u.email,
-          username: u.username || '',
-          avatar: u.avatar || '/assets/default-avatar.png',
-          cover: u.cover || '/assets/default-cover.png',
-          bio: u.bio || 'Bienvenido a EcoChat', // ← AÑADIR
-          messageCount: 0,
-          lastSeen: 'En línea'
-        };
-      });
-
-      io.emit('actualizar-usuarios', 
-        Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({
-          usuario,
-          avatar,
-          cover,
-          email: usuariosInfo[usuario]?.email || usuario,
-          username: usuariosInfo[usuario]?.username || '',
-          bio: usuariosInfo[usuario]?.bio || 'Bienvenido a EcoChat', // ← AÑADE ESTA LÍNEA
-          messageCount: usuariosInfo[usuario]?.messageCount || 0,
-          lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
-        }))
-      );
-    } catch (err) {
-      console.log('Error al crear mensaje:', err.message);
-    }
-  });
-
-  // Solicitar información de usuario para el inspector
+  // Otras handlers de socket...
   socket.on('solicitar-info-usuario', async (email) => {
     try {
       const user = await User.findOne({ email });
@@ -527,7 +385,7 @@ io.on('connection', (socket) => {
           username: user.username || '',
           avatar: user.avatar || '/assets/default-avatar.png',
           cover: user.cover || '/assets/default-cover.png',
-          bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
+          bio: user.bio || 'Bienvenido a EcoChat',
           messageCount: 0,
           lastSeen: new Date().toLocaleString()
         });
@@ -542,62 +400,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Actualizar periódicamente
-setInterval(async () => {
-  try {
-    const mensajes = await Mensaje.find().sort({ fecha: 1 });
-    io.emit('cargar-mensajes', mensajes);
-
-    const usuariosMap = {};
-    const usuariosInfo = {};
-    
-    mensajes.forEach(m => {
-      usuariosMap[m.usuario] = { 
-        avatar: m.avatar || '/assets/default-avatar.png', 
-        cover: '' 
-      };
-    });
-
-    const usuariosDB = await User.find({ 
-      $or: Object.keys(usuariosMap).length > 0 ? [
-        { username: { $in: Object.keys(usuariosMap) } },
-        { email: { $in: Object.keys(usuariosMap) } }
-      ] : [] 
-    });
-    
-    usuariosDB.forEach(u => {
-      const key = u.username || u.email;
-      if (usuariosMap[key]) {
-        usuariosMap[key].cover = u.cover || '/assets/default-cover.png';
-      }
-      
-      usuariosInfo[key] = {
-        email: u.email,
-        username: u.username || '',
-        avatar: u.avatar || '/assets/default-avatar.png',
-        cover: u.cover || '/assets/default-cover.png',
-        bio: u.bio || 'Bienvenido a EcoChat', // ← AÑADIR
-        messageCount: 0,
-        lastSeen: 'En línea'
-      };
-    });
-
-    io.emit('actualizar-usuarios', 
-      Object.entries(usuariosMap).map(([usuario, { avatar, cover }]) => ({
-        usuario,
-        avatar,
-        cover,
-        email: usuariosInfo[usuario]?.email || usuario,
-        username: usuariosInfo[usuario]?.username || '',
-        bio: usuariosInfo[usuario]?.bio || 'Bienvenido a EcoChat', // ← AÑADE ESTA LÍNEA
-        messageCount: usuariosInfo[usuario]?.messageCount || 0,
-        lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
-      }))
-    );
-  } catch (err) {
-    console.error('Error en actualización periódica:', err);
-  }
-}, 15000);
-
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
