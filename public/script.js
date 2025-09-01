@@ -582,36 +582,34 @@ loginBtn?.addEventListener('click', async () => {
   }
 });
 
-  // --- Enviar mensaje ---
-  enviarBtn?.addEventListener('click', () => {
-    const texto = mensajeInput.value.trim();
-    if (!texto) return;
-    if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
-    enviarBtn.disabled = true;
-
-    socket.emit('nuevo-mensaje', {
-      usuario: userEmail || 'Invitado',
-      username: username || 'Invitado',
-      texto,
-      avatar: userAvatar,
-      cover: userCover,
-      token
-    });
-
-    mensajeInput.value = '';
-    charCountEl && (charCountEl.textContent = '0/200');
+enviarBtn?.addEventListener('click', () => {
+  if (!puedeEnviar) return;
+  
+  const texto = mensajeInput.value.trim();
+  if (!texto) return;
+  if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
+  
+  puedeEnviar = false;
+  enviarBtn.disabled = true;
+  
+  socket.emit('nuevo-mensaje', {
+    usuario: userEmail || 'Invitado',
+    username: username || 'Invitado',
+    texto,
+    avatar: userAvatar,
+    cover: userCover,
+    token
   });
 
+  mensajeInput.value = '';
+  charCountEl && (charCountEl.textContent = '0/200');
+  
+  // ⭐ AÑADIR: Rehabilitar después de 1 segundo
   setTimeout(() => {
+    puedeEnviar = true;
     enviarBtn.disabled = false;
   }, 1000);
-
-  mensajeInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      enviarBtn.click();
-    }
-  });
+});
 
   // --- Subir avatar ---
   document.getElementById('subir-avatar')?.addEventListener('click', async () => {
