@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const loginBtn = document.getElementById('loginBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const editProfileBtn = document.getElementById('editProfileBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
 
   let username = '';
   let userEmail = '';
@@ -63,18 +64,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function showProfileEdit() {
     profileEdit.classList.remove('hidden');
+    authButtons.classList.add('hidden');
+    authForms.classList.add('hidden');
+    profileActions.classList.add('hidden');
   }
 
   function hideProfileEdit() {
     profileEdit.classList.add('hidden');
+    profileActions.classList.remove('hidden');
   }
 
-  // --- Event listeners para los nuevos botones ---
+  // --- Event listeners para los botones de UI ---
   showLoginBtn?.addEventListener('click', showLoginForm);
   showRegisterBtn?.addEventListener('click', showRegisterForm);
   cancelLoginBtn?.addEventListener('click', hideAuthForms);
   cancelRegisterBtn?.addEventListener('click', hideAuthForms);
   editProfileBtn?.addEventListener('click', showProfileEdit);
+  cancelEditBtn?.addEventListener('click', hideProfileEdit);
 
   // --- AUTO-LOGIN AL CARGAR LA PÁGINA ---
   const savedToken = localStorage.getItem('ecochat_token');
@@ -123,6 +129,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('avatarPreview').src = userAvatar;
       document.getElementById('coverPreview').src = userCover;
 
+      // Llenar el campo de edición de username
+      document.getElementById('editUsername').value = username || '';
+
       // Actualizar estado en socket
       socket.emit('actualizar-estado', {
         id: userId,
@@ -162,6 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('usernameDisplay').textContent = 'Invitado';
     document.getElementById('avatarPreview').src = 'assets/default-avatar.png';
     document.getElementById('coverPreview').src = 'assets/default-cover.png';
+    document.getElementById('editUsername').value = '';
     
     // Resetear formularios
     document.getElementById('loginEmail').value = '';
@@ -169,7 +179,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('registerEmail').value = '';
     document.getElementById('registerPassword').value = '';
     document.getElementById('registerUsername').value = '';
-    document.getElementById('editUsername').value = '';
     
     // Desconectar socket y reconectar
     socket.disconnect();
@@ -303,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     div.style.padding = '8px 12px';
     div.style.borderRadius = '8px';
     div.style.background = '#fff';
-    div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+    div.style.boxShadow: '0 1px 3px rgba(0,0,0,0.05)';
     div.style.cursor = 'pointer';
 
     div.addEventListener('click', () => {
@@ -436,6 +445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         profileActions.classList.remove('hidden');
         
         document.getElementById('usernameDisplay').textContent = username;
+        document.getElementById('editUsername').value = username || '';
 
         // obtener datos usuario
         const userRes = await fetch(`/user/${userId}`, {
@@ -530,8 +540,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           avatar: userAvatar,
           cover: userCover
         });
+        
+        alert('Avatar actualizado correctamente');
+      } else {
+        alert(data.error || 'Error al subir avatar');
       }
-      alert(data.message || 'Avatar subido');
     } catch (err) {
       console.error('upload avatar error', err);
       alert('Error subiendo avatar');
@@ -574,11 +587,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           avatar: userAvatar,
           cover: userCover
         });
+        
+        alert('Portada actualizada correctamente');
+      } else {
+        alert(data.error || 'Error al subir portada');
       }
-      alert(data.message || 'Cover subido');
     } catch (err) {
       console.error('upload cover error', err);
-      alert('Error subiendo cover');
+      alert('Error subiendo portada');
     }
   });
 });

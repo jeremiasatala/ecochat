@@ -618,3 +618,17 @@ html {
     padding: 15px;
   }
 }
+
+/* Añade esto al final de tu styles.css */
+#cancelEditBtn {
+  width: 100%;
+  margin-top: 20px;
+  background: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+#cancelEditBtn:hover {
+  background: #5a6268;
+  border-color: #5a6268;
+}
