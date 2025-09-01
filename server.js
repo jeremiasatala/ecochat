@@ -144,7 +144,7 @@ app.post('/verify-token', async (req, res) => {
       email: user.email,
       username: user.username || '', // ← Añadir username
       avatar: user.avatar || '/assets/default-avatar.png',
-      cover: user.cover || '/assets/default-cover.png'
+      cover: user.cover || '/assets/default-cover.png',
       bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
     });
   } catch (err) {
@@ -161,7 +161,7 @@ app.get('/user/:id', async (req, res) => {
       email: user.email,
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
-      cover: user.cover || '/assets/default-cover.png' 
+      cover: user.cover || '/assets/default-cover.png',
       bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
     });
   } catch (err) {
