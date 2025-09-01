@@ -34,19 +34,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   let usersData = {};
 
   let puedeEnviar = true; // ⭐ Variable de control (limpiar token del lado del cliente)
-  // --- Función para enviar mensaje ---
-  function enviarMensaje() {
+  function enviarMensaje(e) {
+    if (e) e.preventDefault(); // Prevenir comportamiento por defecto
     if (!puedeEnviar) return;
     
+    // Establecer control de envío inmediatamente
+    puedeEnviar = false;
+    enviarBtn.disabled = true;
+    
     const texto = mensajeInput.value.trim();
-    if (!texto) return;
-    if (!socket || !socket.connected) {
-      alert('Socket no conectado, recarga la página');
+    if (!texto) {
+      // Si no hay texto, permitir enviar de nuevo
+      puedeEnviar = true;
+      enviarBtn.disabled = false;
       return;
     }
     
-    puedeEnviar = false;
-    enviarBtn.disabled = true;
+    if (!socket || !socket.connected) {
+      alert('Socket no conectado, recarga la página');
+      // Permitir enviar de nuevo después del alert
+      puedeEnviar = true;
+      enviarBtn.disabled = false;
+      return;
+    }
     
     socket.emit('nuevo-mensaje', {
       usuario: userEmail || 'Invitado',
@@ -319,12 +329,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
 
   // contador de caracteres
-    mensajeInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        enviarMensaje(); // ← Usar la misma función
-      }
-    });
+  mensajeInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensaje(e); // Pasar el evento
+    }
+  });
 
   // --- Render lista de usuarios ---
   socket.on('actualizar-usuarios', (usuarios = []) => {
@@ -618,7 +628,7 @@ loginBtn?.addEventListener('click', async () => {
   }
 });
 
-enviarBtn?.addEventListener('click', enviarMensaje);
+enviarBtn?.addEventListener('click', (e) => enviarMensaje(e));
 
   // --- Subir avatar ---
   document.getElementById('subir-avatar')?.addEventListener('click', async () => {
