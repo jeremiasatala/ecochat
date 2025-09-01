@@ -238,10 +238,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('registerPassword').value = '';
     document.getElementById('registerUsername').value = '';
     
-    // Desconectar socket y reconectar
-    socket.disconnect();
-    socket.connect();
-    
     console.log('Sesión cerrada');
   }
 
@@ -591,6 +587,7 @@ loginBtn?.addEventListener('click', async () => {
     const texto = mensajeInput.value.trim();
     if (!texto) return;
     if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
+    enviarBtn.disabled = true;
 
     socket.emit('nuevo-mensaje', {
       usuario: userEmail || 'Invitado',
@@ -604,6 +601,10 @@ loginBtn?.addEventListener('click', async () => {
     mensajeInput.value = '';
     charCountEl && (charCountEl.textContent = '0/200');
   });
+
+  setTimeout(() => {
+    enviarBtn.disabled = false;
+  }, 1000);
 
   mensajeInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
