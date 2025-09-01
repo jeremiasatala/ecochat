@@ -131,6 +131,9 @@ function enviarMensaje(e) {
     authButtons.classList.add('hidden');
     authForms.classList.add('hidden');
     profileActions.classList.add('hidden');
+    
+    // ⭐⭐ NUEVO: Cargar la bio actual en el campo de edición
+    document.getElementById('editBioInput').value = userBio;
   }
 
   function hideProfileEdit() {
@@ -140,51 +143,52 @@ function enviarMensaje(e) {
 
   // --- Función para actualizar bio ---
   async function actualizarBio() {
-    const nuevaBio = document.getElementById('editBio').value.trim();
-    if (!nuevaBio) return alert('La descripción no puede estar vacía');
-    if (!token) return alert('Inicia sesión para editar tu descripción');
+  // ⭐⭐ CAMBIO: Leer de editBioInput en lugar de editBio
+  const nuevaBio = document.getElementById('editBioInput').value.trim();
+  if (!nuevaBio) return alert('La descripción no puede estar vacía');
+  if (!token) return alert('Inicia sesión para editar tu descripción');
 
-    try {
-      const res = await fetch('/set-bio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ bio: nuevaBio })
+  try {
+    const res = await fetch('/set-bio', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ bio: nuevaBio })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      userBio = nuevaBio;
+      console.log('Bio actualizada:', userBio);
+      document.getElementById('bio').textContent = userBio;
+      
+      // Actualizar localStorage
+      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+      updatedUser.bio = userBio;
+      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+      
+      // Actualizar estado en socket
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover,
+        bio: userBio
       });
       
-      const data = await res.json();
-      if (res.ok) {
-        userBio = nuevaBio;
-        console.log('Bio actualizada 1:', userBio); // ← AÑADIR
-        document.getElementById('bio').textContent = userBio;
-        
-        // Actualizar localStorage
-        const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
-        updatedUser.bio = userBio;
-        localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
-        
-        // Actualizar estado en socket
-        socket.emit('actualizar-estado', {
-          id: userId,
-          email: userEmail,
-          username,
-          avatar: userAvatar,
-          cover: userCover,
-          bio: userBio
-        });
-        
-        alert('Descripción actualizada correctamente');
-        hideProfileEdit();
-      } else {
-        alert(data.error || 'Error al actualizar descripción');
-      }
-    } catch (err) {
-      console.error('Error actualizando bio:', err);
-      alert('Error al actualizar descripción');
+      alert('Descripción actualizada correctamente');
+      hideProfileEdit();
+    } else {
+      alert(data.error || 'Error al actualizar descripción');
     }
+  } catch (err) {
+    console.error('Error actualizando bio:', err);
+    alert('Error al actualizar descripción');
   }
+}
 
   // --- Event listeners para los botones de UI ---
   showLoginBtn?.addEventListener('click', showLoginForm);
@@ -249,6 +253,8 @@ function enviarMensaje(e) {
       // Llenar el campo de edición de username
       document.getElementById('editUsername').value = username || '';
 
+      document.getElementById('editBioInput').value = userBio;
+
       // Actualizar estado en socket
       socket.emit('actualizar-estado', {
         id: userId,
@@ -290,6 +296,7 @@ function enviarMensaje(e) {
     document.getElementById('avatarPreview').src = 'assets/default-avatar.png';
     document.getElementById('coverPreview').src = 'assets/default-cover.png';
     document.getElementById('editUsername').value = '';
+    document.getElementById('editBioInput').value = '';
     document.getElementById('bio').textContent = 'Bienvenido a EcoChat'; // ← AÑADIR
     
     // Resetear formularios
