@@ -4,8 +4,9 @@
   grid-template-columns: 0.5fr 1fr 0.5fr;
   gap: 20px;
   padding: 20px;
-  height: 92vh;
+  height: 100vh; /* Cambiar de 92vh a 100vh */
   margin: 0 auto;
+  box-sizing: border-box; /* Importante para que el padding no cause overflow */
 }
 
 /* Sidebars */
@@ -30,16 +31,19 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  height: 100%; /* Asegurar que ocupe toda la altura disponible */
+  min-height: 0; /* Crucial para que flexbox funcione correctamente con scroll */
 }
 
 #chat {
-  flex: 1;
+  flex: 1; /* Ocupa el espacio disponible */
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: auto; /* Scroll vertical */
   display: flex;
   flex-direction: column;
   gap: 15px;
   background: #f8f9fa;
+  min-height: 0; /* Importante para el scroll en flexbox */
 }
 
 /* Logo */
@@ -108,6 +112,7 @@
 .comment-form {
   padding: 20px;
   border-top: 1px solid #e9ecef;
+  flex-shrink: 0; /* No se reduce, mantiene su tamaño */
 }
 
 .comment-form textarea {
