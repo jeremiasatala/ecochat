@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let userId = '';
   let userAvatar = 'assets/default-avatar.png';
   let userCover = 'assets/default-cover.png';
+  let userBio = 'Bienvenido a EcoChat'; // ← AÑADIR
   let usersData = {};
 
   // --- FUNCIONES DE INTERFAZ ---
@@ -74,6 +75,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     profileActions.classList.remove('hidden');
   }
 
+  // --- Función para actualizar bio ---
+  async function actualizarBio() {
+    const nuevaBio = document.getElementById('editBio').value.trim();
+    if (!nuevaBio) return alert('La descripción no puede estar vacía');
+    if (!token) return alert('Inicia sesión para editar tu descripción');
+
+    try {
+      const res = await fetch('/set-bio', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ bio: nuevaBio })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        userBio = nuevaBio;
+        document.getElementById('bio').textContent = userBio;
+        
+        // Actualizar localStorage
+        const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+        updatedUser.bio = userBio;
+        localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+        
+        // Actualizar estado en socket
+        socket.emit('actualizar-estado', {
+          id: userId,
+          email: userEmail,
+          username,
+          avatar: userAvatar,
+          cover: userCover,
+          bio: userBio
+        });
+        
+        alert('Descripción actualizada correctamente');
+        hideProfileEdit();
+      } else {
+        alert(data.error || 'Error al actualizar descripción');
+      }
+    } catch (err) {
+      console.error('Error actualizando bio:', err);
+      alert('Error al actualizar descripción');
+    }
+  }
+
   // --- Event listeners para los botones de UI ---
   showLoginBtn?.addEventListener('click', showLoginForm);
   showRegisterBtn?.addEventListener('click', showRegisterForm);
@@ -81,6 +129,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   cancelRegisterBtn?.addEventListener('click', hideAuthForms);
   editProfileBtn?.addEventListener('click', showProfileEdit);
   cancelEditBtn?.addEventListener('click', hideProfileEdit);
+  // ← AÑADIR AQUÍ el event listener para guardar bio
+  document.getElementById('guardarBioBtn')?.addEventListener('click', actualizarBio);
 
   // --- AUTO-LOGIN AL CARGAR LA PÁGINA ---
   const savedToken = localStorage.getItem('ecochat_token');
@@ -118,6 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       username = verifyData.username || userEmail;
       userAvatar = verifyData.avatar || 'assets/default-avatar.png';
       userCover = verifyData.cover || 'assets/default-cover.png';
+      userBio = verifyData.bio || 'Bienvenido a EcoChat'; // ← AÑADIR
 
       // Actualizar UI
       authButtons.classList.add('hidden');
@@ -128,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('usernameDisplay').textContent = username;
       document.getElementById('avatarPreview').src = userAvatar;
       document.getElementById('coverPreview').src = userCover;
+      document.getElementById('bio').textContent = userBio; // ← AÑADIR
 
       // Llenar el campo de edición de username
       document.getElementById('editUsername').value = username || '';
@@ -172,6 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('avatarPreview').src = 'assets/default-avatar.png';
     document.getElementById('coverPreview').src = 'assets/default-cover.png';
     document.getElementById('editUsername').value = '';
+    document.getElementById('bio').textContent = 'Bienvenido a EcoChat'; // ← AÑADIR
     
     // Resetear formularios
     document.getElementById('loginEmail').value = '';
@@ -287,6 +340,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       info.style.fontSize = '13px';
       info.textContent = u.username?.trim() ? u.username : u.email;
 
+      // AÑADIR BIO A LA TARJETA DE USUARIO (opcional)
+      if (u.bio && u.bio !== 'Bienvenido a EcoChat') {
+        const bio = document.createElement('div');
+        bio.style.fontSize = '11px';
+        bio.style.color = '#666';
+        bio.style.marginTop = '5px';
+        bio.style.fontStyle = 'italic';
+        bio.textContent = u.bio.length > 30 ? u.bio.substring(0, 30) + '...' : u.bio;
+        info.appendChild(bio);
+      }
+
       li.appendChild(coverDiv);
       li.appendChild(info);
       userList.appendChild(li);
@@ -363,6 +427,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inspector-cover').src = user.cover || 'assets/default-cover.png';
       document.getElementById('inspector-messages').textContent = user.messageCount || '0';
       document.getElementById('inspector-lastseen').textContent = 'En línea';
+      
+      // AÑADIR BIO AL INSPECTOR
+      const bioElement = document.getElementById('inspector-bio') || document.createElement('p');
+      if (!document.getElementById('inspector-bio')) {
+        bioElement.id = 'inspector-bio';
+        bioElement.style.margin = '10px 0';
+        bioElement.style.fontStyle = 'italic';
+        bioElement.style.color = '#6c757d';
+        document.querySelector('.inspector-info').appendChild(bioElement);
+      }
+      bioElement.textContent = user.bio || 'Bienvenido a EcoChat';
       
       document.querySelector('[data-tab="profile"]').click();
     } else {
@@ -455,6 +530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         userAvatar = userData.avatar || 'assets/default-avatar.png';
         userCover = userData.cover || 'assets/default-cover.png';
+        userBio = userData.bio || 'Bienvenido a EcoChat'; // ← AÑADIR
         username = userData.username || username;
 
         document.getElementById('avatarPreview').src = userAvatar;

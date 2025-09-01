@@ -62,6 +62,11 @@
               <input id="registerUsername" type="text" class="input-modern" placeholder=" ">
               <label class="input-label">Nombre de usuario</label>
             </div>
+            <!-- AÑADIR ESTO: Textarea para la descripción -->
+            <div class="input-group-modern">
+              <textarea id="editBio" class="input-modern" placeholder=" " rows="3" style="resize: vertical;"></textarea>
+              <label class="input-label">Descripción de perfil</label>
+            </div>
             <div class="input-group-modern">
               <input id="registerEmail" type="email" class="input-modern" placeholder=" ">
               <label class="input-label">Email</label>
@@ -140,6 +145,11 @@
               </button>
             </div>
 
+            <!-- AÑADIR ESTO: Botón para guardar bio -->
+            <button id="guardarBioBtn" class="btn-modern btn-primary-modern" style="margin-top: 20px;">
+              <span>💾</span> Guardar Descripción
+            </button>
+
             <!-- BOTÓN DE CANCELAR - AÑADIDO AQUÍ -->
             <button id="cancelEditBtn" class="btn-modern btn-outline-modern" style="margin-top: 20px; background: #6c757d; border-color: #6c757d; color: white;">
               <span>↩️</span> Cancelar Edición
@@ -195,6 +205,8 @@
             <p><strong>Email:</strong> <span id="inspector-email">email@ejemplo.com</span></p>
             <p><strong>Mensajes enviados:</strong> <span id="inspector-messages">0</span></p>
             <p><strong>Última conexión:</strong> <span id="inspector-lastseen">Ahora</span></p>
+            <!-- AÑADIR ESTO: Línea para la descripción -->
+            <p><strong>Descripción:</strong> <span id="inspector-bio">Bienvenido a EcoChat</span></p>
           </div>
         </div>
       </div>

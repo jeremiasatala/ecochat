@@ -4,9 +4,10 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  username: { type: String, unique: true, sparse: true }, // ← Debe existir
+  username: { type: String, unique: true, sparse: true },
   avatar: { type: String, default: '/assets/default-avatar.png' },
-  cover: { type: String, default: '/assets/default-cover.png' }
+  cover: { type: String, default: '/assets/default-cover.png' },
+  bio: { type: String, default: 'Bienvenido a EcoChat' } // ← CAMPO AÑADIDO
 });
 
 

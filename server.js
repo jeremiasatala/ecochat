@@ -115,9 +115,10 @@ app.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        username: user.username || '', // ← Asegurar que envía username
+        username: user.username || '',
         avatar: user.avatar || '/assets/default-avatar.png',
-        cover: user.cover || '/assets/default-cover.png'
+        cover: user.cover || '/assets/default-cover.png',
+        bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
       }
     });
   } catch (err) {
@@ -144,6 +145,7 @@ app.post('/verify-token', async (req, res) => {
       username: user.username || '', // ← Añadir username
       avatar: user.avatar || '/assets/default-avatar.png',
       cover: user.cover || '/assets/default-cover.png'
+      bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
     });
   } catch (err) {
     res.status(401).json({ error: 'Token inválido', valid: false });
@@ -160,6 +162,7 @@ app.get('/user/:id', async (req, res) => {
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png' 
+      bio: user.bio || 'Bienvenido a EcoChat' // ← AÑADIR
     });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
@@ -177,6 +180,7 @@ app.get('/profile', autenticar, async (req, res) => {
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png',
+      bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
       messageCount: 0,
       lastSeen: new Date().toLocaleString()
     });
@@ -195,6 +199,7 @@ app.get('/user-by-email/:email', async (req, res) => {
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png',
+      bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
       messageCount: 0,
       lastSeen: new Date().toLocaleString()
     });
@@ -216,6 +221,22 @@ app.post('/set-username', autenticar, async (req, res) => {
     res.json({ message: 'Username actualizado', username: user.username });
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar username' });
+  }
+});
+
+// Actualizar bio
+app.post('/set-bio', autenticar, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    user.bio = bio;
+    await user.save();
+
+    res.json({ message: 'Descripción actualizada', bio: user.bio });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar descripción' });
   }
 });
 
@@ -331,6 +352,7 @@ io.on('connection', (socket) => {
           username: u.username || '',
           avatar: u.avatar || '/assets/default-avatar.png',
           cover: u.cover || '/assets/default-cover.png',
+          bio: u.bio || 'Bienvenido a EcoChat', // ← AÑADIR
           messageCount: 0,
           lastSeen: 'En línea'
         };
@@ -343,6 +365,7 @@ io.on('connection', (socket) => {
           cover,
           email: usuariosInfo[usuario]?.email || usuario,
           username: usuariosInfo[usuario]?.username || '',
+          bio: usuariosInfo[usuario]?.bio || 'Bienvenido a EcoChat', // ← AÑADIR
           messageCount: usuariosInfo[usuario]?.messageCount || 0,
           lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
         }))
@@ -416,6 +439,7 @@ io.on('connection', (socket) => {
           username: u.username || '',
           avatar: u.avatar || '/assets/default-avatar.png',
           cover: u.cover || '/assets/default-cover.png',
+          bio: u.bio || 'Bienvenido a EcoChat', // ← AÑADIR
           messageCount: 0,
           lastSeen: 'En línea'
         };
@@ -428,6 +452,7 @@ io.on('connection', (socket) => {
           cover,
           email: usuariosInfo[usuario]?.email || usuario,
           username: usuariosInfo[usuario]?.username || '',
+          bio: usuariosInfo[usuario]?.bio || 'Bienvenido a EcoChat', // ← AÑADIR
           messageCount: usuariosInfo[usuario]?.messageCount || 0,
           lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
         }))
@@ -447,6 +472,7 @@ io.on('connection', (socket) => {
           username: user.username || '',
           avatar: user.avatar || '/assets/default-avatar.png',
           cover: user.cover || '/assets/default-cover.png',
+          bio: user.bio || 'Bienvenido a EcoChat', // ← AÑADIR
           messageCount: 0,
           lastSeen: new Date().toLocaleString()
         });
@@ -495,6 +521,7 @@ setInterval(async () => {
         username: u.username || '',
         avatar: u.avatar || '/assets/default-avatar.png',
         cover: u.cover || '/assets/default-cover.png',
+        bio: u.bio || 'Bienvenido a EcoChat', // ← AÑADIR
         messageCount: 0,
         lastSeen: 'En línea'
       };
@@ -507,6 +534,7 @@ setInterval(async () => {
         cover,
         email: usuariosInfo[usuario]?.email || usuario,
         username: usuariosInfo[usuario]?.username || '',
+        bio: usuariosInfo[usuario]?.bio || 'Bienvenido a EcoChat', // ← AÑADIR
         messageCount: usuariosInfo[usuario]?.messageCount || 0,
         lastSeen: usuariosInfo[usuario]?.lastSeen || 'Desconocido'
       }))
