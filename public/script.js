@@ -359,8 +359,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.style.padding = '6px';
       li.style.cursor = 'pointer';
       li.style.borderLeft = u.online ? '4px solid #28a745' : '4px solid #6c757d';
-      // ⭐ AGREGAR: atributo data-email para identificar usuarios
-      li.setAttribute('data-email', u.email);
 
       li.addEventListener('click', () => {
         inspeccionarPerfil(userKey);
@@ -756,29 +754,4 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert('Error subiendo portada');
     }
   });
-
-  // --- BOTÓN PARA MINIMIZAR SIDEBAR DERECHA ---
-  function setupMinimizeToggle() {
-    const minimizeBtn = document.createElement('button');
-    minimizeBtn.className = 'minimize-toggle';
-    minimizeBtn.innerHTML = '→';
-    minimizeBtn.title = 'Minimizar/Expandir barra lateral';
-    
-    const sidebarRight = document.querySelector('.sidebar-right');
-    sidebarRight.appendChild(minimizeBtn);
-    
-    minimizeBtn.addEventListener('click', () => {
-      sidebarRight.classList.toggle('minimized');
-      minimizeBtn.innerHTML = sidebarRight.classList.contains('minimized') ? '←' : '→';
-      
-      // Actualizar el layout del grid
-      document.querySelector('.layout').style.gridTemplateColumns = 
-        sidebarRight.classList.contains('minimized') 
-          ? '0.5fr 1fr 80px' 
-          : '0.5fr 1fr 0.5fr';
-    });
-  }
-
-  // Inicializar el botón de minimizar
-  setupMinimizeToggle();
 });
