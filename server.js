@@ -242,15 +242,9 @@ app.post('/set-bio', autenticar, async (req, res) => {
 
 // Mensajes  ⟵ REEMPLAZAR COMPLETO ESTE BLOQUE
 const mensajeSchema = new mongoose.Schema({
-  // ⬇️ NUEVO: guardamos el email del autor como clave estable
-  email: { type: String, required: true },
-
-  // 'usuario' queda como nombre visible (username o email para mostrar)
-  usuario: String,
+  usuario: String,       // ← Quitar 'required' si existe
   texto: String,
   avatar: String,
-
-  // TTL 60s para autolimpieza
   fecha: { type: Date, default: Date.now, expires: 60 }
 });
 
