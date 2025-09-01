@@ -15,6 +15,9 @@ const server = http.createServer(app);
 const io = new Server(server);
 const JWT_SECRET = 'TU_SECRET_SUPER_SEGURA!123';
 
+// ⭐⭐ NUEVO: Mapa para usuarios conectados
+const usuariosConectados = new Map();
+
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -164,6 +167,12 @@ app.get('/user-by-email/:email', async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    
+    // ⭐⭐ NUEVO: Verificar si el usuario está conectado
+    const estaConectado = Array.from(usuariosConectados.values()).some(
+      userConectado => userConectado.email === user.email
+    );
+    
     res.json({ 
       email: user.email,
       username: user.username || '',
@@ -171,7 +180,8 @@ app.get('/user-by-email/:email', async (req, res) => {
       cover: user.cover || '/assets/default-cover.png',
       bio: user.bio || 'Bienvenido a EcoChat',
       messageCount: 0,
-      lastSeen: new Date().toLocaleString()
+      lastSeen: estaConectado ? 'En línea' : 'Desconectado',
+      online: estaConectado // ⭐⭐ NUEVO: Estado de conexión
     });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
@@ -277,6 +287,11 @@ const actualizarListaUsuarios = async () => {
 
     const usuariosPorEmail = {};
     usuariosDB.forEach(u => {
+      // ⭐⭐ NUEVO: Verificar si el usuario está conectado
+      const estaConectado = Array.from(usuariosConectados.values()).some(
+        userConectado => userConectado.email === u.email
+      );
+      
       usuariosPorEmail[u.email] = {
         email: u.email,
         username: u.username || u.email,
@@ -284,7 +299,8 @@ const actualizarListaUsuarios = async () => {
         cover: u.cover || '/assets/default-cover.png',
         bio: u.bio || 'Bienvenido a EcoChat',
         messageCount: 0,
-        lastSeen: 'En línea'
+        lastSeen: estaConectado ? 'En línea' : 'Desconectado',
+        online: estaConectado // ⭐⭐ NUEVO: Estado de conexión
       };
     });
 
@@ -298,6 +314,23 @@ const actualizarListaUsuarios = async () => {
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
+  // ⭐⭐ NUEVO: Evento para registrar usuario autenticado
+  socket.on('user-authenticated', (userData) => {
+    console.log('Usuario autenticado:', userData.email);
+    
+    // Guardar usuario en mapa de conectados
+    usuariosConectados.set(socket.id, {
+      id: userData.id,
+      email: userData.email,
+      username: userData.username,
+      socketId: socket.id,
+      connectedAt: new Date()
+    });
+    
+    // Actualizar lista de usuarios para todos
+    actualizarListaUsuarios();
+  });
+
   // Cargar mensajes iniciales
   (async () => {
     try {
@@ -309,7 +342,7 @@ io.on('connection', (socket) => {
     }
   })();
 
-  // Handler para nuevos mensajes - CORREGIDO
+  // Handler para nuevos mensajes
   socket.on('nuevo-mensaje', async (data) => {
     console.log('📨 Mensaje recibido en servidor:', {
       usuario: data.usuario,
@@ -353,16 +386,14 @@ io.on('connection', (socket) => {
       await mensaje.save();
       console.log('💾 Mensaje guardado en BD:', mensaje._id);
       
-      // SOLUCIÓN CRÍTICA: Emitir solo UNA vez
-      // Crear un objeto de mensaje único para evitar duplicados
+      // Emitir mensaje a todos los clientes
       const mensajeParaEmitir = {
         _id: mensaje._id,
         usuario: displayName,
         email: userEmail,
         texto: texto,
         avatar: userAvatar,
-        fecha: mensaje.fecha,
-        __emitted: true // Marcar como emitido
+        fecha: mensaje.fecha
       };
       
       io.emit('nuevo-mensaje', mensajeParaEmitir);
@@ -375,11 +406,16 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Otras handlers de socket...
+  // Solicitar información de usuario
   socket.on('solicitar-info-usuario', async (email) => {
     try {
       const user = await User.findOne({ email });
       if (user) {
+        // ⭐⭐ NUEVO: Verificar si está conectado
+        const estaConectado = Array.from(usuariosConectados.values()).some(
+          userConectado => userConectado.email === user.email
+        );
+        
         socket.emit('info-usuario', {
           email: user.email,
           username: user.username || '',
@@ -387,7 +423,8 @@ io.on('connection', (socket) => {
           cover: user.cover || '/assets/default-cover.png',
           bio: user.bio || 'Bienvenido a EcoChat',
           messageCount: 0,
-          lastSeen: new Date().toLocaleString()
+          lastSeen: estaConectado ? 'En línea' : 'Desconectado',
+          online: estaConectado
         });
       }
     } catch (err) {
@@ -397,6 +434,9 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log('Usuario desconectado:', socket.id);
+    // ⭐⭐ NUEVO: Remover usuario de conectados
+    usuariosConectados.delete(socket.id);
+    actualizarListaUsuarios(); // Actualizar lista para todos
   });
 });
 
