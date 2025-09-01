@@ -190,7 +190,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         email: userEmail,
         username,
         avatar: userAvatar,
-        cover: userCover
+        cover: userCover,
+        bio: userBio
       });
 
       console.log('Sesión restaurada automáticamente');
@@ -428,15 +429,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inspector-messages').textContent = user.messageCount || '0';
       document.getElementById('inspector-lastseen').textContent = 'En línea';
       
-      // AÑADIR BIO AL INSPECTOR
-      const bioElement = document.getElementById('inspector-bio') || document.createElement('p');
-      if (!document.getElementById('inspector-bio')) {
+      // MOSTRAR BIO EN EL INSPECTOR - CORREGIDO
+      // Asegurarse de que el elemento para la bio existe
+      let bioElement = document.getElementById('inspector-bio');
+      if (!bioElement) {
+        bioElement = document.createElement('p');
         bioElement.id = 'inspector-bio';
         bioElement.style.margin = '10px 0';
         bioElement.style.fontStyle = 'italic';
         bioElement.style.color = '#6c757d';
         document.querySelector('.inspector-info').appendChild(bioElement);
       }
+      // Mostrar la bio del usuario o el mensaje por defecto
       bioElement.textContent = user.bio || 'Bienvenido a EcoChat';
       
       document.querySelector('[data-tab="profile"]').click();
@@ -543,7 +547,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           email: userEmail,
           username,
           avatar: userAvatar,
-          cover: userCover
+          cover: userCover,
+          bio: userBio
         });
       } else {
         alert(data.error || 'Error al iniciar sesión');
@@ -614,7 +619,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           email: userEmail,
           username,
           avatar: userAvatar,
-          cover: userCover
+          cover: userCover,
+          bio: userBio
         });
         
         alert('Avatar actualizado correctamente');
@@ -661,7 +667,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           email: userEmail,
           username,
           avatar: userAvatar,
-          cover: userCover
+          cover: userCover,
+          bio: userBio
         });
         
         alert('Portada actualizada correctamente');
