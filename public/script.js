@@ -80,7 +80,10 @@ function enviarMensaje(e) {
   });
 
   mensajeInput.value = '';
-  charCountEl && (charCountEl.textContent = '0/200');
+  const charCountEl = document.getElementById('charCount');
+  if (charCountEl) {
+    charCountEl.textContent = '0/200';
+  }
   console.log('✅ Mensaje enviado, limpiando campo');
   
   // Rehabilitar después de 1 segundo
