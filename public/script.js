@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const data = await res.json();
       if (res.ok) {
         userBio = nuevaBio;
+        console.log('Bio actualizada 1:', userBio); // ← AÑADIR
         document.getElementById('bio').textContent = userBio;
         
         // Actualizar localStorage
@@ -169,7 +170,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       userAvatar = verifyData.avatar || 'assets/default-avatar.png';
       userCover = verifyData.cover || 'assets/default-cover.png';
       userBio = verifyData.bio || 'Bienvenido a EcoChat'; // ← AÑADIR
-      document.getElementById('bio').textContent = userBio;
 
       // Actualizar UI
       authButtons.classList.add('hidden');
@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('usernameDisplay').textContent = username;
       document.getElementById('avatarPreview').src = userAvatar;
       document.getElementById('coverPreview').src = userCover;
+      console.log('Bio actualizada 2:', userBio); // ← AÑADIR
       document.getElementById('bio').textContent = userBio; // ← AÑADIR
 
       // Llenar el campo de edición de username
@@ -541,6 +542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('avatarPreview').src = userAvatar;
         document.getElementById('coverPreview').src = userCover;
         document.getElementById('usernameDisplay').textContent = username;
+        console.log('Bio actualizada 3:', userBio); // ← AÑADIR
         document.getElementById('bio').textContent = userBio; // ← AÑADE ESTA LÍNEA
 
         // actualizar estado en socket
