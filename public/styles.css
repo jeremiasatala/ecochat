@@ -4,9 +4,9 @@
   grid-template-columns: 0.5fr 1fr 0.5fr;
   gap: 20px;
   padding: 20px;
-  height: 100vh; /* Cambiar de 92vh a 100vh */
+  height: 100vh; 
   margin: 0 auto;
-  box-sizing: border-box; /* Importante para que el padding no cause overflow */
+  box-sizing: border-box;
 }
 
 /* Sidebars */
@@ -31,19 +31,19 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  height: 100%; /* Asegurar que ocupe toda la altura disponible */
-  min-height: 0; /* Crucial para que flexbox funcione correctamente con scroll */
+  height: 100%;
+  min-height: 0;
 }
 
 #chat {
-  flex: 1; /* Ocupa el espacio disponible */
+  flex: 1;
   padding: 20px;
-  overflow-y: auto; /* Scroll vertical */
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 15px;
   background: #f8f9fa;
-  min-height: 0; /* Importante para el scroll en flexbox */
+  min-height: 0;
 }
 
 /* Logo */
@@ -669,47 +669,30 @@ html {
   }
 }
 
-/* ===== ESTILOS PARA BOTONES DE PERFIL EN HORIZONTAL ===== */
+/* ===== BOTONES DE PERFIL MÁS PEQUEÑOS Y ELEGANTES ===== */
 #profile-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   margin-top: 20px;
   justify-content: space-between;
+  align-items: center;
 }
 
 #editProfileBtn, 
 #logoutBtn {
-  width: 48% !important; /* Ambos botones ocuparán casi la mitad del espacio */
-  margin-top: 0 !important;
+  width: 48% !important;
   margin: 0;
+  padding: 10px 16px !important; /* Más pequeño */
+  font-size: 14px !important; /* Texto más pequeño */
+  border-radius: 10px !important; /* Bordes más redondeados */
+  min-height: 40px; /* Altura consistente */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-/* Asegurar que los botones se vean bien en móviles */
-@media (max-width: 768px) {
-  #profile-actions {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  #editProfileBtn, 
-  #logoutBtn {
-    width: 100% !important;
-  }
-}
-
-/* Estilos específicos para el botón de logout */
-#logoutBtn {
-  background: #dc3545 !important;
-  border-color: #dc3545 !important;
-  color: white !important;
-}
-
-#logoutBtn:hover {
-  background: #c82333 !important;
-  border-color: #c82333 !important;
-}
-
-/* Estilos para el botón de editar perfil */
+/* Botón Editar Perfil - Estilo outline moderno */
 #editProfileBtn {
   background: transparent !important;
   border: 2px solid #007bff !important;
@@ -719,4 +702,49 @@ html {
 #editProfileBtn:hover {
   background: #007bff !important;
   color: white !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Botón Cerrar Sesión - Estilo sólido moderno */
+#logoutBtn {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+#logoutBtn:hover {
+  background: linear-gradient(135deg, #c82333, #a71e2a) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+/* Iconos dentro de los botones */
+#editProfileBtn span,
+#logoutBtn span {
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  #profile-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  #editProfileBtn, 
+  #logoutBtn {
+    width: 100% !important;
+    padding: 12px 18px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* Efecto de carga para ambos botones */
+#editProfileBtn:active,
+#logoutBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
