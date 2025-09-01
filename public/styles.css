@@ -1,123 +1,173 @@
-/* Layout principal - RESTAURAR */
+/* ===== FRUTIGER AERO THEME - Windows Vista Style (2009) ===== */
+
+/* Variables de colores Frutiger Aero */
+:root {
+  --aero-blue: #d7e5f2;
+  --aero-glass: rgba(255, 255, 255, 0.6);
+  --aero-border: rgba(255, 255, 255, 0.8);
+  --aero-highlight: rgba(255, 255, 255, 0.4);
+  --aero-shadow: rgba(0, 0, 0, 0.2);
+  --vista-accent: #0078d7;
+  --vista-accent-light: #4ca6ff;
+  --vista-green: #00cc6f;
+  --vista-orange: #ff8c00;
+  --text-dark: #1a1a1a;
+  --text-light: #ffffff;
+}
+
+/* Estilos generales */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #d6e7ff 0%, #b9d4f1 100%);
+  margin: 0;
+  padding: 0;
+  color: var(--text-dark);
+  overflow: hidden;
+}
+
+/* Layout principal - estilo Vista */
 .layout {
   display: grid;
   grid-template-columns: 0.5fr 1fr 0.5fr;
-  gap: 20px;
-  padding: 20px;
-  height: 92vh;
+  gap: 15px;
+  padding: 15px;
+  height: 95vh;
   margin: 0 auto;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
 }
 
-/* Sidebars */
+/* Sidebars con efecto de cristal */
 .sidebar {
-  background: #fff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: var(--aero-glass);
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 0 15px var(--aero-shadow);
   overflow-y: auto;
+  border: 1px solid var(--aero-border);
+  backdrop-filter: blur(10px);
 }
 
 .sidebar-left {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
-/* Chat central */
+/* Chat central con efecto de cristal */
 .chat-panel {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: var(--aero-glass);
+  border-radius: 10px;
+  box-shadow: 0 0 15px var(--aero-shadow);
   display: flex;
   flex-direction: column;
+  border: 1px solid var(--aero-border);
+  backdrop-filter: blur(10px);
 }
 
 #chat {
   flex: 1;
-  padding: 20px;
+  padding: 15px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  background: #f8f9fa;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* Logo */
+/* Logo estilo Vista */
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid var(--aero-border);
 }
 
 .logo-img {
   width: 40px;
   height: 40px;
+  filter: drop-shadow(0 0 5px rgba(0, 120, 215, 0.5));
 }
 
 .logo h2 {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  color: #2c3e50;
+  color: var(--vista-accent);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  margin: 0;
 }
 
-/* Perfil */
+/* Perfil con efecto de cristal */
 #profile-card {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--aero-glass);
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px var(--aero-shadow);
+  border: 1px solid var(--aero-border);
+  backdrop-filter: blur(5px);
 }
 
 .cover-photo img {
   width: 100%;
-  height: 120px;
+  height: 100px;
   object-fit: cover;
+  border-bottom: 1px solid var(--aero-border);
 }
 
 .avatar-container {
-  margin-top: -40px;
+  margin-top: -30px;
   text-align: center;
 }
 
 .avatar-container img {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 4px solid #fff;
+  border: 3px solid var(--aero-glass);
   object-fit: cover;
-  background: #fff;
+  background: var(--aero-glass);
+  box-shadow: 0 0 10px var(--aero-shadow);
 }
 
 .profile-info {
-  padding: 20px;
+  padding: 15px;
   text-align: center;
 }
 
 .profile-info h3 {
   margin: 10px 0 5px 0;
-  color: #2c3e50;
+  color: var(--vista-accent);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .stats {
-  color: #6c757d;
+  color: #4a4a4a;
   margin: 10px 0;
+  font-size: 14px;
 }
 
-/* Formulario de comentarios */
+/* Formulario de comentarios estilo Vista */
 .comment-form {
-  padding: 20px;
-  border-top: 1px solid #e9ecef;
+  padding: 15px;
+  border-top: 1px solid var(--aero-border);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .comment-form textarea {
   width: 95%;
   resize: none;
-  padding: 16px;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  height: 80px;
+  padding: 12px;
+  border: 1px solid var(--aero-border);
+  border-radius: 8px;
+  height: 70px;
   font-size: 14px;
+  background: var(--aero-glass);
+  box-shadow: inset 0 1px 3px var(--aero-shadow);
 }
 
 .comment-footer {
@@ -128,42 +178,53 @@
 }
 
 .send-btn {
-  background: linear-gradient(135deg, #007bff, #0056b3);
-  color: #fff;
+  background: linear-gradient(to bottom, var(--vista-accent-light), var(--vista-accent));
+  color: var(--text-light);
   border: none;
   border-radius: 50%;
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   font-size: 16px;
+  box-shadow: 0 2px 5px var(--aero-shadow);
+  text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.3);
 }
 
 .send-btn:hover {
-  background: linear-gradient(135deg, #0056b3, #004085);
+  background: linear-gradient(to bottom, var(--vista-accent), #0066c5);
   transform: scale(1.05);
 }
 
-/* Lista de usuarios */
+/* Lista de usuarios estilo Vista */
 #userList {
   list-style: none;
   padding: 0;
-  margin: 15px 0 0 0;
+  margin: 10px 0 0 0;
 }
 
 #userList li {
-  margin-bottom: 15px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border-left: 4px solid rgb(25,25,255);
+  margin-bottom: 10px;
+  padding: 10px;
+  background: var(--aero-glass);
+  border-radius: 8px;
+  border-left: 4px solid var(--vista-accent);
+  box-shadow: 0 1px 3px var(--aero-shadow);
+  border: 1px solid var(--aero-border);
+  transition: all 0.2s ease;
+}
+
+#userList li:hover {
+  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px var(--aero-shadow);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 250px 1fr 200px;
-    gap: 15px;
-    padding: 15px;
+    gap: 12px;
+    padding: 12px;
   }
 }
 
@@ -175,53 +236,44 @@
   
   .sidebar {
     height: auto;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
   
   .chat-panel {
-    height: 500px;
+    height: 450px;
   }
 }
 
-/* Asegurar que el auth y profile se vean bien */
-#auth, #profile {
-  display: block;
-}
-
-.hidden {
-  display: none !important;
-}
-
-html {
-  font-family: arial, sans-serif;
-}
-
-/* Tabs para sidebar derecho */
+/* Tabs para sidebar derecho estilo Vista */
 .tabs {
   display: flex;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #e9ecef;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--aero-border);
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   border: none;
-  background: none;
+  background: transparent;
   cursor: pointer;
   font-weight: 600;
-  color: #6c757d;
-  border-bottom: 3px solid transparent;
-  transition: all 0.3s ease;
+  color: #666;
+  transition: all 0.2s ease;
 }
 
 .tab-btn.active {
-  color: #007bff;
-  border-bottom-color: #007bff;
+  color: var(--vista-accent);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 -2px 0 var(--vista-accent);
 }
 
 .tab-btn:hover {
-  color: #0056b3;
+  color: var(--vista-accent);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .tab-content {
@@ -232,27 +284,29 @@ html {
   display: block;
 }
 
-/* Inspector de perfil */
+/* Inspector de perfil estilo Vista */
 #profile-inspector {
-  background: #fff;
-  border-radius: 12px;
+  background: var(--aero-glass);
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px var(--aero-shadow);
+  border: 1px solid var(--aero-border);
 }
 
 .inspector-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid var(--aero-border);
 }
 
 .inspector-header h3 {
   margin: 0;
   font-size: 16px;
-  color: #2c3e50;
+  color: var(--vista-accent);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
 .close-btn {
@@ -260,132 +314,145 @@ html {
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #6c757d;
+  color: #666;
   padding: 0;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  background: #e9ecef;
-  color: #dc3545;
+  background: rgba(0, 0, 0, 0.1);
+  color: #ff0000;
 }
 
 .inspector-cover img {
   width: 100%;
-  height: 100px;
+  height: 90px;
   object-fit: cover;
+  border-bottom: 1px solid var(--aero-border);
 }
 
 .inspector-avatar {
   text-align: center;
-  margin-top: -40px;
+  margin-top: -30px;
 }
 
 .inspector-avatar img {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  border: 4px solid #fff;
+  border: 3px solid var(--aero-glass);
   object-fit: cover;
-  background: #fff;
+  background: var(--aero-glass);
+  box-shadow: 0 0 10px var(--aero-shadow);
 }
 
 .inspector-info {
-  padding: 20px 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .inspector-info p {
-  margin: 10px 0;
+  margin: 8px 0;
   font-size: 14px;
 }
 
 .inspector-info strong {
-  color: #2c3e50;
+  color: var(--vista-accent);
 }
 
-/* Mensajes clickeables */
+/* Mensajes estilo Vista */
 .comment {
   cursor: pointer;
   transition: all 0.3s ease;
+  background: var(--aero-glass);
+  border-radius: 8px;
+  padding: 10px;
+  border: 1px solid var(--aero-border);
+  box-shadow: 0 1px 3px var(--aero-shadow);
 }
 
 .comment:hover {
-  background: #f8f9fa !important;
+  background: rgba(255, 255, 255, 0.7);
   transform: translateX(5px);
+  box-shadow: 0 3px 8px var(--aero-shadow);
 }
 
-/* ===== FORMULARIOS MODERNOS (NUEVOS ESTILOS) ===== */
+/* ===== FORMULARIOS FRUTIGER AERO ===== */
 .form-section {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e1e8ed;
+  background: var(--aero-glass);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 10px var(--aero-shadow);
+  border: 1px solid var(--aero-border);
+  backdrop-filter: blur(5px);
 }
 
 .form-section h3 {
-  margin: 0 0 20px 0;
-  color: #2c3e50;
+  margin: 0 0 15px 0;
+  color: var(--vista-accent);
   font-size: 18px;
   font-weight: 600;
   text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
-/* Grupos de input mejorados */
+/* Grupos de input Frutiger Aero */
 .input-group-modern {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .input-modern {
   width: 100%;
-  padding: 16px 20px;
-  border: 2px solid #e1e8ed;
-  border-radius: 12px;
-  background: #f8f9fa;
-  font-size: 15px;
+  padding: 12px 15px;
+  border: 1px solid var(--aero-border);
+  border-radius: 6px;
+  background: var(--aero-glass);
+  font-size: 14px;
   transition: all 0.3s ease;
   outline: none;
-  color: #2c3e50;
+  color: var(--text-dark);
+  box-shadow: inset 0 1px 3px var(--aero-shadow);
 }
 
 .input-modern:focus {
-  border-color: #007bff;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-  transform: translateY(-1px);
+  border-color: var(--vista-accent);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 2px rgba(0, 120, 215, 0.3);
 }
 
 .input-modern::placeholder {
-  color: #a0aec0;
+  color: #888;
 }
 
 .input-label {
   position: absolute;
   top: -8px;
-  left: 15px;
+  left: 12px;
   font-size: 12px;
   font-weight: 600;
-  color: #007bff;
-  background: #fff;
-  padding: 0 8px;
+  color: var(--vista-accent);
+  background: var(--aero-glass);
+  padding: 0 6px;
   pointer-events: none;
   transition: all 0.3s ease;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
 }
 
-/* Botones modernos */
+/* Botones Frutiger Aero */
 .btn-modern {
   width: 100%;
-  padding: 16px 24px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 12px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -395,6 +462,8 @@ html {
   gap: 8px;
   position: relative;
   overflow: hidden;
+  text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px var(--aero-shadow);
 }
 
 .btn-modern:before {
@@ -404,7 +473,7 @@ html {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   transition: left 0.5s;
 }
 
@@ -413,55 +482,57 @@ html {
 }
 
 .btn-modern:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 8px var(--aero-shadow);
+  transform: translateY(-2px);
 }
 
 .btn-modern:active {
   transform: translateY(0);
+  box-shadow: 0 1px 3px var(--aero-shadow);
 }
 
 .btn-primary-modern {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(to bottom, var(--vista-accent-light), var(--vista-accent));
   color: white;
 }
 
 .btn-primary-modern:hover {
-  background: linear-gradient(135deg, #0056b3, #004085);
+  background: linear-gradient(to bottom, var(--vista-accent), #0066c5);
 }
 
 .btn-secondary-modern {
-  background: linear-gradient(135deg, #28a745, #1e7e34);
+  background: linear-gradient(to bottom, #4cd964, #2ecc71);
   color: white;
 }
 
 .btn-secondary-modern:hover {
-  background: linear-gradient(135deg, #1e7e34, #145a23);
+  background: linear-gradient(to bottom, #2ecc71, #27ae60);
 }
 
 .btn-outline-modern {
   background: transparent;
-  border: 2px solid #007bff;
-  color: #007bff;
+  border: 2px solid var(--vista-accent);
+  color: var(--vista-accent);
 }
 
 .btn-outline-modern:hover {
-  background: #007bff;
+  background: var(--vista-accent);
   color: white;
 }
 
 .btn-small-modern {
-  padding: 10px 16px;
-  font-size: 14px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 5px;
 }
 
-/* Divisor moderno */
+/* Divisor Frutiger Aero */
 .divider-modern {
   display: flex;
   align-items: center;
-  margin: 25px 0;
-  color: #a0aec0;
-  font-size: 14px;
+  margin: 20px 0;
+  color: #777;
+  font-size: 13px;
 }
 
 .divider-modern::before,
@@ -469,75 +540,75 @@ html {
   content: "";
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, #e1e8ed, transparent);
+  background: linear-gradient(90deg, transparent, var(--aero-border), transparent);
 }
 
 .divider-modern span {
-  padding: 0 15px;
-  background: #fff;
+  padding: 0 12px;
+  background: var(--aero-glass);
 }
 
-/* Upload moderno */
+/* Upload Frutiger Aero */
 .upload-modern {
-  border: 2px dashed #cbd5e0;
-  border-radius: 12px;
-  padding: 20px;
+  border: 2px dashed var(--aero-border);
+  border-radius: 8px;
+  padding: 15px;
   text-align: center;
-  background: #f8f9fa;
+  background: var(--aero-glass);
   transition: all 0.3s ease;
   cursor: pointer;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .upload-modern:hover {
-  border-color: #007bff;
-  background: #e7f3ff;
-  transform: translateY(-1px);
+  border-color: var(--vista-accent);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .upload-modern.dragover {
-  border-color: #007bff;
-  background: #d4edff;
+  border-color: var(--vista-accent);
+  background: rgba(0, 120, 215, 0.1);
 }
 
 .upload-icon {
-  font-size: 24px;
-  color: #007bff;
-  margin-bottom: 10px;
+  font-size: 22px;
+  color: var(--vista-accent);
+  margin-bottom: 8px;
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
 }
 
 .upload-text {
-  color: #4a5568;
-  font-size: 14px;
-  margin-bottom: 10px;
+  color: #555;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 .upload-subtext {
-  color: #a0aec0;
-  font-size: 12px;
+  color: #888;
+  font-size: 11px;
 }
 
 .upload-preview {
-  margin-top: 15px;
+  margin-top: 12px;
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--aero-shadow);
+  border: 1px solid var(--aero-border);
 }
 
 .upload-preview img {
   width: 100%;
-  height: 120px;
+  height: 100px;
   object-fit: cover;
 }
 
 /* Grupo de botones de upload */
 .upload-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 15px;
+  gap: 10px;
+  margin-top: 12px;
 }
-
 
 /* Estados de carga */
 .btn-loading {
@@ -548,8 +619,8 @@ html {
 .btn-loading:after {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border: 2px solid transparent;
   border-top: 2px solid currentColor;
   border-radius: 50%;
@@ -570,29 +641,29 @@ html {
 /* Validación visual */
 .input-modern.error {
   border-color: #e53e3e;
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+  box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.3);
 }
 
 .input-modern.success {
   border-color: #38a169;
-  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.1);
+  box-shadow: 0 0 0 2px rgba(56, 161, 105, 0.3);
 }
 
-/* Responsive para formularios modernos */
+/* Responsive para formularios */
 @media (max-width: 768px) {
   .form-section {
-    padding: 20px;
-    margin-bottom: 15px;
+    padding: 15px;
+    margin-bottom: 12px;
   }
   
   .input-modern {
-    padding: 14px 16px;
-    font-size: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
   }
   
   .btn-modern {
-    padding: 14px 20px;
-    font-size: 15px;
+    padding: 10px 15px;
+    font-size: 13px;
   }
   
   .upload-actions {
@@ -600,14 +671,14 @@ html {
   }
   
   .upload-modern {
-    padding: 15px;
+    padding: 12px;
   }
 }
 
-/* Añade esto al final de tu styles.css */
+/* Botón de cancelar */
 #cancelEditBtn {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 15px;
   background: #6c757d;
   border-color: #6c757d;
   color: white;
@@ -621,45 +692,85 @@ html {
 /* ===== ESTILOS PARA LA DESCRIPCIÓN ===== */
 /* Textarea de descripción */
 #editBio {
-  min-height: 80px;
+  min-height: 70px;
   resize: vertical;
   line-height: 1.4;
+  background: var(--aero-glass);
+  border: 1px solid var(--aero-border);
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: inset 0 1px 3px var(--aero-shadow);
 }
 
 /* Descripción en el perfil */
 #bio {
-  color: #6c757d;
+  color: #4a4a4a;
   font-style: italic;
   margin: 10px 0;
   line-height: 1.4;
   max-height: 60px;
   overflow-y: auto;
   padding: 8px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 3px solid #007bff;
+  background: var(--aero-glass);
+  border-radius: 6px;
+  border-left: 3px solid var(--vista-accent);
+  box-shadow: 0 1px 3px var(--aero-shadow);
 }
 
 /* Descripción en el inspector */
 #inspector-bio {
-  color: #6c757d;
+  color: #4a4a4a;
   font-style: italic;
   margin: 10px 0;
   line-height: 1.4;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 3px solid #28a745;
+  padding: 8px;
+  background: var(--aero-glass);
+  border-radius: 6px;
+  border-left: 3px solid var(--vista-green);
+  box-shadow: 0 1px 3px var(--aero-shadow);
 }
 
 /* Responsive para descripción */
 @media (max-width: 768px) {
   #bio, #inspector-bio {
-    font-size: 14px;
+    font-size: 13px;
     padding: 6px;
   }
   
   #editBio {
     min-height: 60px;
   }
+}
+
+/* Efectos de transparencia adicionales */
+.hidden {
+  display: none !important;
+}
+
+html {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Asegurar que el auth y profile se vean bien */
+#auth, #profile {
+  display: block;
+}
+
+/* Personalización de scrollbar para navegadores WebKit */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vista-accent);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0066c5;
 }
