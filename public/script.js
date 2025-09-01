@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     div.style.padding = '8px 12px';
     div.style.borderRadius = '8px';
     div.style.background = '#fff';
-    div.style.boxShadow: '0 1px 3px rgba(0,0,0,0.05)';
+    div.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
     div.style.cursor = 'pointer';
 
     div.addEventListener('click', () => {
