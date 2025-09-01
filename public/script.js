@@ -33,6 +33,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   let userBio = 'Bienvenido a EcoChat'; // ← AÑADIR
   let usersData = {};
 
+  let puedeEnviar = true; // ⭐ Variable de control (limpiar token del lado del cliente)
+  // --- Función para enviar mensaje ---
+  function enviarMensaje() {
+    if (!puedeEnviar) return;
+    
+    const texto = mensajeInput.value.trim();
+    if (!texto) return;
+    if (!socket || !socket.connected) {
+      alert('Socket no conectado, recarga la página');
+      return;
+    }
+    
+    puedeEnviar = false;
+    enviarBtn.disabled = true;
+    
+    socket.emit('nuevo-mensaje', {
+      usuario: userEmail || 'Invitado',
+      username: username || 'Invitado',
+      texto,
+      avatar: userAvatar,
+      cover: userCover,
+      token
+    });
+
+    mensajeInput.value = '';
+    charCountEl && (charCountEl.textContent = '0/200');
+    
+    // Rehabilitar después de 1 segundo
+    setTimeout(() => {
+      puedeEnviar = true;
+      enviarBtn.disabled = false;
+    }, 1000);
+  }
+
   // --- FUNCIONES DE INTERFAZ ---
   function showLoginForm() {
     authButtons.classList.add('hidden');
@@ -285,10 +319,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   socket.on('connect_error', (err) => console.error('socket connect_error', err));
 
   // contador de caracteres
-  const charCountEl = document.getElementById('charCount');
-  mensajeInput?.addEventListener('input', () => {
-    charCountEl && (charCountEl.textContent = `${mensajeInput.value.length}/200`);
-  });
+    mensajeInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        enviarMensaje(); // ← Usar la misma función
+      }
+    });
 
   // --- Render lista de usuarios ---
   socket.on('actualizar-usuarios', (usuarios = []) => {
@@ -582,34 +618,7 @@ loginBtn?.addEventListener('click', async () => {
   }
 });
 
-enviarBtn?.addEventListener('click', () => {
-  if (!puedeEnviar) return;
-  
-  const texto = mensajeInput.value.trim();
-  if (!texto) return;
-  if (!socket || !socket.connected) return alert('Socket no conectado, recarga la página');
-  
-  puedeEnviar = false;
-  enviarBtn.disabled = true;
-  
-  socket.emit('nuevo-mensaje', {
-    usuario: userEmail || 'Invitado',
-    username: username || 'Invitado',
-    texto,
-    avatar: userAvatar,
-    cover: userCover,
-    token
-  });
-
-  mensajeInput.value = '';
-  charCountEl && (charCountEl.textContent = '0/200');
-  
-  // ⭐ AÑADIR: Rehabilitar después de 1 segundo
-  setTimeout(() => {
-    puedeEnviar = true;
-    enviarBtn.disabled = false;
-  }, 1000);
-});
+enviarBtn?.addEventListener('click', enviarMensaje);
 
   // --- Subir avatar ---
   document.getElementById('subir-avatar')?.addEventListener('click', async () => {
