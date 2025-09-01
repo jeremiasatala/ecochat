@@ -82,11 +82,16 @@ const autenticar = (req, res, next) => {
   }
 };
 
-// Registro - MODIFICADO
+// Registro - CORREGIDO
 app.post('/register', async (req, res) => {
   try {
-    const { email, password, username } = req.body; // ← Añadir username
-    const user = new User({ email, password, username }); // ← Pasar username
+    const { email, password, username, bio } = req.body; // ← AÑADIR bio
+    const user = new User({ 
+      email, 
+      password, 
+      username, 
+      bio: bio || 'Bienvenido a EcoChat' // ← AÑADIR bio con valor por defecto
+    });
     await user.save();
     res.json({ message: 'Usuario creado correctamente' });
   } catch (err) {
@@ -242,7 +247,8 @@ app.post('/set-bio', autenticar, async (req, res) => {
 
 // Mensajes  ⟵ REEMPLAZAR COMPLETO ESTE BLOQUE
 const mensajeSchema = new mongoose.Schema({
-  usuario: String,       // ← Quitar 'required' si existe
+  usuario: String,
+  email: String,
   texto: String,
   avatar: String,
   fecha: { type: Date, default: Date.now, expires: 60 }
@@ -326,40 +332,103 @@ app.post('/logout', autenticar, (req, res) => {
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
 
-  // ⬇️ CAMBIO: simplificamos y usamos email como clave
+  // Función para emitir usuarios actualizados
+  const actualizarListaUsuarios = async () => {
+    try {
+      // Obtener todos los mensajes para extraer usuarios únicos
+      const mensajes = await Mensaje.find().sort({ fecha: 1 }).limit(100);
+      
+      // Extraer emails únicos de los mensajes
+      const emailsUnicos = new Set();
+      mensajes.forEach(m => {
+        if (m.email) emailsUnicos.add(m.email);
+      });
+
+      // Buscar usuarios en la DB por email
+      const usuariosDB = await User.find({ 
+        email: { $in: Array.from(emailsUnicos) } 
+      });
+
+      // Crear mapa de usuarios por email para fácil acceso
+      const usuariosPorEmail = {};
+      usuariosDB.forEach(u => {
+        usuariosPorEmail[u.email] = {
+          email: u.email,
+          username: u.username || u.email,
+          avatar: u.avatar || '/assets/default-avatar.png',
+          cover: u.cover || '/assets/default-cover.png',
+          bio: u.bio || 'Bienvenido a EcoChat',
+          messageCount: 0,
+          lastSeen: 'En línea'
+        };
+      });
+
+      // Emitir lista de usuarios actualizada
+      io.emit('actualizar-usuarios', Object.values(usuariosPorEmail));
+    } catch (err) {
+      console.error('Error al actualizar lista de usuarios:', err);
+    }
+  };
+
+  // Cargar mensajes iniciales y lista de usuarios
   (async () => {
     try {
       const mensajes = await Mensaje.find().sort({ fecha: 1 }).limit(100);
       socket.emit('cargar-mensajes', mensajes);
-
-      // Guardamos todos los emails que aparecen en los mensajes
-      const emailsSet = new Set();
-      mensajes.forEach(m => {
-        if (m.email) emailsSet.add(m.email); // ⬅️ NUEVO: usamos email en vez de usuario
-      });
-
-      // Buscamos usuarios en la base de datos por email
-      const usuariosDB = await User.find({ email: { $in: Array.from(emailsSet) } });
-
-      // Preparamos el array de usuarios para emitir al cliente
-      const usuariosAEmitir = usuariosDB.map(u => ({
-        usuario: u.username || u.email,                       // nombre visible
-        email: u.email,                                       // clave estable
-        username: u.username || '',
-        avatar: u.avatar || '/assets/default-avatar.png',
-        cover: u.cover || '/assets/default-cover.png',
-        bio: u.bio || 'Bienvenido a EcoChat',                 // ⬅️ bio real desde DB
-        messageCount: 0,
-        lastSeen: 'En línea'
-      }));
-
-      // Emitimos la lista de usuarios actualizada
-      socket.emit('actualizar-usuarios', usuariosAEmitir);
+      await actualizarListaUsuarios();
     } catch (err) {
       console.error('Error al cargar mensajes iniciales:', err);
     }
   })();
 
+  socket.on('nuevo-mensaje', async (data) => {
+    try {
+      const { texto, token } = data;
+      let userAvatar = '/assets/default-avatar.png';
+      let userCover = '/assets/default-cover.png';
+      let displayName = 'Invitado';
+      let userEmail = 'invitado@ejemplo.com';
+
+      // Verificar token y obtener datos del usuario
+      if (token) {
+        try {
+          const cleanToken = token.startsWith('Bearer ') ? token.slice(7) : token;
+          const decoded = jwt.verify(cleanToken, JWT_SECRET);
+          const user = await User.findById(decoded.id);
+          
+          if (user) {
+            userAvatar = user.avatar || '/assets/default-avatar.png';
+            userCover = user.cover || '/assets/default-cover.png';
+            displayName = user.username || user.email;
+            userEmail = user.email;
+          }
+        } catch (tokenError) {
+          console.log('Token inválido para mensaje:', tokenError.message);
+        }
+      }
+
+      // Crear y guardar mensaje
+      const mensaje = new Mensaje({ 
+        usuario: displayName,
+        email: userEmail, // ← AÑADIR EMAIL AL MENSAJE
+        texto, 
+        avatar: userAvatar 
+      });
+      
+      await mensaje.save();
+      
+      // Emitir mensaje con email incluido
+      io.emit('nuevo-mensaje', { 
+        ...mensaje.toObject(), 
+        email: userEmail 
+      });
+
+      // Actualizar lista de usuarios
+      await actualizarListaUsuarios();
+    } catch (err) {
+      console.log('Error al crear mensaje:', err.message);
+    }
+  });
 
   socket.on('nuevo-mensaje', async (data) => {
     try {

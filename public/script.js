@@ -297,9 +297,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // --- Render lista de usuarios ---
   socket.on('actualizar-usuarios', (usuarios = []) => {
     userList.innerHTML = '';
+    usersData = {}; // Limpiar datos anteriores
     usuarios.forEach(u => {
-      const userKey = u.usuario || u.email;
+      const userKey = u.email;
       usersData[userKey] = u;
+
+      if (u.username) {
+        usersData[u.username] = u;
+      }
       
       const li = document.createElement('li');
       li.style.display = 'flex';
@@ -422,36 +427,60 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- Función para inspeccionar perfil ---
-  function inspeccionarPerfil(usernameOrEmail) {
-    const user = usersData[usernameOrEmail];
-    
-    if (user) {
-      document.getElementById('inspector-username').textContent = user.username || user.usuario || user.email;
-      document.getElementById('inspector-email').textContent = user.email || 'No disponible';
-      document.getElementById('inspector-avatar').src = user.avatar || 'assets/default-avatar.png';
-      document.getElementById('inspector-cover').src = user.cover || 'assets/default-cover.png';
-      document.getElementById('inspector-messages').textContent = user.messageCount || '0';
-      document.getElementById('inspector-lastseen').textContent = 'En línea';
-      
-      // MOSTRAR BIO EN EL INSPECTOR - CORREGIDO
-      // Asegurarse de que el elemento para la bio existe
-      let bioElement = document.getElementById('inspector-bio');
-      if (!bioElement) {
-        bioElement = document.createElement('p');
-        bioElement.id = 'inspector-bio';
-        bioElement.style.margin = '10px 0';
-        bioElement.style.fontStyle = 'italic';
-        bioElement.style.color = '#6c757d';
-        document.querySelector('.inspector-info').appendChild(bioElement);
+async function inspeccionarPerfil(usernameOrEmail) {
+  // Primero buscar en usersData
+  let user = usersData[usernameOrEmail];
+  
+  // Si no encontramos al usuario, intentar buscar por email
+  if (!user) {
+    // Buscar por email en los valores de usersData
+    user = Object.values(usersData).find(u => 
+      u.email === usernameOrEmail || u.usuario === usernameOrEmail
+    );
+  }
+  
+  // Si todavía no encontramos, hacer petición al servidor
+  if (!user && usernameOrEmail.includes('@')) {
+    try {
+      const response = await fetch(`/user-by-email/${encodeURIComponent(usernameOrEmail)}`);
+      if (response.ok) {
+        user = await response.json();
+        // Guardar en usersData para futuras consultas
+        usersData[user.email] = user;
+        usersData[user.username || user.email] = user;
       }
-      // Mostrar la bio del usuario o el mensaje por defecto
-      bioElement.textContent = user.bio || 'Bienvenido a EcoChat';
-      
-      document.querySelector('[data-tab="profile"]').click();
-    } else {
-      alert('No se encontró información del usuario');
+    } catch (error) {
+      console.error('Error al obtener info del usuario:', error);
     }
   }
+  
+  if (user) {
+    document.getElementById('inspector-username').textContent = user.username || user.usuario || user.email;
+    document.getElementById('inspector-email').textContent = user.email || 'No disponible';
+    document.getElementById('inspector-avatar').src = user.avatar || 'assets/default-avatar.png';
+    document.getElementById('inspector-cover').src = user.cover || 'assets/default-cover.png';
+    document.getElementById('inspector-messages').textContent = user.messageCount || '0';
+    document.getElementById('inspector-lastseen').textContent = 'En línea';
+    
+    // Asegurarse de que el elemento para la bio existe
+    let bioElement = document.getElementById('inspector-bio');
+    if (!bioElement) {
+      bioElement = document.createElement('p');
+      bioElement.id = 'inspector-bio';
+      bioElement.style.margin = '10px 0';
+      bioElement.style.fontStyle = 'italic';
+      bioElement.style.color = '#6c757d';
+      document.querySelector('.inspector-info').appendChild(bioElement);
+    }
+    
+    // Mostrar la bio del usuario o el mensaje por defecto
+    bioElement.textContent = user.bio || 'Bienvenido a EcoChat';
+    
+    document.querySelector('[data-tab="profile"]').click();
+  } else {
+    alert('No se encontró información del usuario');
+  }
+}
 
   socket.on('cargar-mensajes', (mensajes = []) => {
     chat.innerHTML = '';
@@ -467,31 +496,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // --- Registro ---
-  registerBtn?.addEventListener('click', async () => {
-    try {
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value.trim();
-      const newUsername = document.getElementById('registerUsername').value.trim();
-      if (!email || !password || !newUsername) return alert('Completa todos los campos');
+// --- Registro ---
+registerBtn?.addEventListener('click', async () => {
+  try {
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value.trim();
+    const newUsername = document.getElementById('registerUsername').value.trim();
+    const bio = document.getElementById('editBio').value.trim(); // ← AÑADIR
+    
+    if (!email || !password || !newUsername) return alert('Completa todos los campos');
 
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username: newUsername })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert('Registrado. Ahora puedes iniciar sesión.');
-        hideAuthForms();
-      } else {
-        alert(data.error || 'Error al registrar');
-      }
-    } catch (err) {
-      console.error('register error', err);
-      alert('Error en registro, mira la consola');
+    const res = await fetch('/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, username: newUsername, bio }) // ← AÑADIR bio
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert('Registrado. Ahora puedes iniciar sesión.');
+      hideAuthForms();
+    } else {
+      alert(data.error || 'Error al registrar');
     }
-  });
+  } catch (err) {
+    console.error('register error', err);
+    alert('Error en registro, mira la consola');
+  }
+});
 
 // --- Login CORREGIDO ---
 loginBtn?.addEventListener('click', async () => {
