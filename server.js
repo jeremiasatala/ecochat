@@ -37,20 +37,40 @@ mongoose.connect(
 .then(() => console.log('MongoDB conectado'))
 .catch(err => console.error('Error conectando a MongoDB:', err));
 
-// Configuración de Multer para subida de archivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = 'public/uploads/';
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+// Y REEMPLAZAR con Cloudinary:
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// Configurar Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configurar almacenamiento para avatares
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ecochat/avatars',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 200, height: 200, crop: 'fill' }]
   }
 });
+
+// Configurar almacenamiento para portadas
+const coverStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'ecochat/covers',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 800, height: 300, crop: 'fill' }]
+  }
+});
+
+// Y cambiar la configuración de multer:
+const uploadAvatar = multer({ storage: avatarStorage });
+const uploadCover = multer({ storage: coverStorage });
 
 const upload = multer({
   storage: storage,
@@ -213,7 +233,7 @@ app.post('/set-bio', autenticar, async (req, res) => {
 });
 
 // Subir avatar
-app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res) => {
+app.post('/upload-avatar', autenticar, uploadAvatar.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
@@ -222,7 +242,7 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
     const user = await User.findById(req.user.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
-    user.avatar = '/uploads/' + req.file.filename;
+    user.avatar = req.file.path;
     await user.save();
 
     await Mensaje.updateMany(
@@ -250,7 +270,7 @@ app.post('/upload-avatar', autenticar, upload.single('avatar'), async (req, res)
 });
 
 // Subir cover
-app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) => {
+app.post('/upload-cover', autenticar, uploadCover.single('cover'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No se seleccionó ningún archivo' });
@@ -259,7 +279,7 @@ app.post('/upload-cover', autenticar, upload.single('cover'), async (req, res) =
     const user = await User.findById(req.user.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
 
-    user.cover = '/uploads/' + req.file.filename;
+    user.cover = req.file.path;
     await user.save();
 
     io.emit('cover-actualizado', { 
