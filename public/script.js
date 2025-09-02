@@ -340,6 +340,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   socket.on('actualizar-usuarios', (usuarios = []) => {
     userList.innerHTML = '';
     usersData = {};
+
+    const usuariosConectados = usuarios.filter(u => u.online).length;
+    const tituloUsuarios = document.querySelector('#users-tab h3');
+    
+    if (tituloUsuarios) {
+        tituloUsuarios.innerHTML = `Usuarios Conectados 👤(${usuariosConectados})`;
+    }
+    
     usuarios.forEach(u => {
       const userKey = u.email;
       usersData[userKey] = u;
