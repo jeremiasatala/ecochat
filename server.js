@@ -48,7 +48,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Configurar almacenamiento para avatares
+// Storage para avatares
 const avatarStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -72,8 +72,8 @@ const coverStorage = new CloudinaryStorage({
 const uploadAvatar = multer({ storage: avatarStorage });
 const uploadCover = multer({ storage: coverStorage });
 
+// CONFIGURACIÓN MULTER PARA SUBIDAS GENERALES (si aún la necesitas)
 const upload = multer({
-  storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
