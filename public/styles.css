@@ -408,3 +408,46 @@ html { font-family: arial, sans-serif; }
     font-size: 15px;
   }
 }
+
+
+/* ===== ESTILOS PARA EL BOTÓN DE GUARDAR USERNAME ===== */
+#guardarUsernameBtn {
+  width: 100%;
+  margin: 15px 0;
+  padding: 12px 24px;
+  font-size: 14px;
+  border-radius: 10px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #28a745, #1e7e34) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+#guardarUsernameBtn:hover {
+  background: linear-gradient(135deg, #1e7e34, #145a23) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+#guardarUsernameBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+#guardarUsernameBtn span {
+  font-size: 16px;
+  margin-right: 6px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  #guardarUsernameBtn {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}

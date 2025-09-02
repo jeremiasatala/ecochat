@@ -178,6 +178,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+// ⭐⭐ NUEVO: Función para actualizar username (AGREGAR ESTO)
+async function actualizarUsername() {
+  const nuevoUsername = document.getElementById('editUsername').value.trim();
+  if (!nuevoUsername) return alert('El nombre de usuario no puede estar vacío');
+  if (!token) return alert('Inicia sesión para editar tu usuario');
+
+  try {
+    const res = await fetch('/set-username', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ username: nuevoUsername })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      username = nuevoUsername;
+      document.getElementById('usernameDisplay').textContent = username;
+      
+      // Actualizar localStorage
+      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+      updatedUser.username = username;
+      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+      
+      // Actualizar estado en socket
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover,
+        bio: userBio
+      });
+      
+      alert('Nombre de usuario actualizado correctamente');
+    } else {
+      alert(data.error || 'Error al actualizar usuario');
+    }
+  } catch (err) {
+    console.error('Error actualizando username:', err);
+    alert('Error al actualizar nombre de usuario');
+  }
+}
+
+
   // --- Event listeners ---
   showLoginBtn?.addEventListener('click', showLoginForm);
   showRegisterBtn?.addEventListener('click', showRegisterForm);
@@ -186,6 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   editProfileBtn?.addEventListener('click', showProfileEdit);
   cancelEditBtn?.addEventListener('click', hideProfileEdit);
   document.getElementById('guardarBioBtn')?.addEventListener('click', actualizarBio);
+  document.getElementById('guardarUsernameBtn')?.addEventListener('click', actualizarUsername)
 
   // --- AUTO-LOGIN ---
   const savedToken = localStorage.getItem('ecochat_token');

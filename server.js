@@ -232,6 +232,28 @@ app.post('/set-bio', autenticar, async (req, res) => {
   }
 });
 
+// Actualizar username
+app.post('/set-username', autenticar, async (req, res) => {
+  try {
+    const { username } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    // Verificar si el username ya existe (opcional pero recomendado)
+    const existingUser = await User.findOne({ username });
+    if (existingUser && existingUser._id.toString() !== req.user.id) {
+      return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+    }
+
+    user.username = username;
+    await user.save();
+
+    res.json({ message: 'Username actualizado', username: user.username });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar username' });
+  }
+});
+
 // Subir avatar
 app.post('/upload-avatar', autenticar, uploadAvatar.single('avatar'), async (req, res) => {
   try {
