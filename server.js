@@ -208,8 +208,8 @@ app.get('/user-by-email/:email', async (req, res) => {
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png',
       bio: user.bio || 'Bienvenido a EcoChat',
-      instagram: user.instagram || '', // Añadir esto
-      twitter: user.twitter || '',     // Añadir esto
+      instagram: user.instagram || '', // Asegurar que se incluye
+      twitter: user.twitter || '',     // Asegurar que se incluye
       messageCount: 0,
       lastSeen: estaConectado ? 'En línea' : 'Desconectado',
       online: estaConectado

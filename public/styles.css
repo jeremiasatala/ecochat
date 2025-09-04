@@ -136,11 +136,15 @@ html { font-family: arial, sans-serif; }
   margin: 8px 0;
   font-size: 14px;
   color: #6c757d;
-  display: none; /* Oculta los campos de email, mensajes, etc */
+  display: block; /* Mostrar todos los párrafos */
+}
+
+.inspector-info p:nth-child(1),
+.inspector-info p:nth-child(2) {
+  display: none; /* Ocultar solo email y mensajes enviados */
 }
 /* Mostrar solo el último visto */
 .inspector-info p:last-child {
-  display: block;
   margin-top: 15px;
   font-size: 13px;
   color: #28a745;
