@@ -722,7 +722,6 @@ async function actualizarTwitter() {
       } else {
         document.getElementById('inspector-twitter-link').classList.add('hidden');
       }
-      }
 
       if (userTwitter) {
         document.getElementById('twitter-username').textContent = '@' + userTwitter;
