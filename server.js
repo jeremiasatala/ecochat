@@ -193,23 +193,26 @@ app.post('/verify-token', async (req, res) => {
 // Obtener usuario por email
 app.get('/user-by-email/:email', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email });
+    const user = await User.findOne({ 
+      email: { $regex: new RegExp("^" + req.params.email + "$", "i") } 
+    });
     if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
-    
-    // ⭐⭐ NUEVO: Verificar si el usuario está conectado
+
     const estaConectado = Array.from(usuariosConectados.values()).some(
       userConectado => userConectado.email === user.email
     );
-    
+
     res.json({ 
       email: user.email,
       username: user.username || '',
       avatar: user.avatar || '/assets/default-avatar.png', 
       cover: user.cover || '/assets/default-cover.png',
       bio: user.bio || 'Bienvenido a EcoChat',
+      instagram: user.instagram || '', // Añadir esto
+      twitter: user.twitter || '',     // Añadir esto
       messageCount: 0,
       lastSeen: estaConectado ? 'En línea' : 'Desconectado',
-      online: estaConectado // ⭐⭐ NUEVO: Estado de conexión
+      online: estaConectado
     });
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener usuario' });
@@ -380,9 +383,11 @@ const actualizarListaUsuarios = async () => {
         avatar: u.avatar || '/assets/default-avatar.png',
         cover: u.cover || '/assets/default-cover.png',
         bio: u.bio || 'Bienvenido a EcoChat',
+        instagram: u.instagram || '', // Añadir esto
+        twitter: u.twitter || '',     // Añadir esto
         messageCount: 0,
         lastSeen: estaConectado ? 'En línea' : 'Desconectado',
-        online: estaConectado // ⭐⭐ NUEVO: Estado de conexión
+        online: estaConectado
       };
     });
 

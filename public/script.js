@@ -714,7 +714,6 @@ async function actualizarTwitter() {
         document.getElementById('inspector-instagram-link').classList.add('hidden');
       }
 
-      // Mostrar Twitter si existe
       if (user.twitter) {
         document.getElementById('inspector-twitter-username').textContent = '@' + user.twitter;
         document.getElementById('inspector-twitter-username').href = `https://twitter.com/${user.twitter}`;
@@ -722,14 +721,9 @@ async function actualizarTwitter() {
       } else {
         document.getElementById('inspector-twitter-link').classList.add('hidden');
       }
-
-      if (userTwitter) {
-        document.getElementById('twitter-username').textContent = '@' + userTwitter;
-        document.getElementById('twitter-username').href = `https://twitter.com/${userTwitter}`;
-        document.getElementById('twitter-link').classList.remove('hidden');
-      }
-  
+      
       document.querySelector('[data-tab="profile"]').click();
+
     } else {
       alert('No se encontró información del usuario');
     }
