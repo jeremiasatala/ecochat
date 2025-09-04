@@ -245,13 +245,11 @@ html { font-family: arial, sans-serif; }
   text-align: center;
 }
 #inspector-bio {
+  text-align: center;
   color: #6c757d;
-  font-size: 13px;
+  margin: 15px 0;
+  padding: 0 15px;
   line-height: 1.5;
-  margin: 0 0 20px 0;
-  padding: 0;
-  background: transparent;
-  border: none;
 }
 
 @media (max-width: 768px) { 
@@ -400,7 +398,11 @@ html { font-family: arial, sans-serif; }
   }
   
   #inspector-username {
-    font-size: 20px;
+    text-align: center;
+    margin: 15px 0 10px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
   }
   
   #inspector-bio {

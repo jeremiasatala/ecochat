@@ -581,17 +581,7 @@ async function actualizarUsername() {
       document.getElementById('inspector-messages').textContent = user.messageCount || '0';
       document.getElementById('inspector-lastseen').textContent = user.online ? 'En línea' : 'Desconectado';
       
-      let bioElement = document.getElementById('inspector-bio');
-      if (!bioElement) {
-        bioElement = document.createElement('p');
-        bioElement.id = 'inspector-bio';
-        bioElement.style.margin = '10px 0';
-        bioElement.style.fontStyle = 'italic';
-        bioElement.style.color = '#6c757d';
-        document.querySelector('.inspector-info').appendChild(bioElement);
-      }
-      
-      bioElement.textContent = user.bio || 'Bienvenido a EcoChat';
+      document.getElementById('inspector-bio').textContent = user.bio || 'Bienvenido a EcoChat';
       
       document.querySelector('[data-tab="profile"]').click();
     } else {
