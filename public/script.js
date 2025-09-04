@@ -574,15 +574,16 @@ async function actualizarUsername() {
     }
     
     if (user) {
-      document.getElementById('inspector-username').textContent = user.username || user.usuario || user.email;
+      document.getElementById('inspector-header-username').textContent = user.username || user.usuario || user.email;
+      document.getElementById('inspector-displayname').textContent = user.username || user.usuario || user.email;
       document.getElementById('inspector-email').textContent = user.email || 'No disponible';
       document.getElementById('inspector-avatar').src = user.avatar || 'assets/default-avatar.png';
       document.getElementById('inspector-cover').src = user.cover || 'assets/default-cover.png';
       document.getElementById('inspector-messages').textContent = user.messageCount || '0';
       document.getElementById('inspector-lastseen').textContent = user.online ? 'En línea' : 'Desconectado';
-      
+  
       document.getElementById('inspector-bio').textContent = user.bio || 'Bienvenido a EcoChat';
-      
+  
       document.querySelector('[data-tab="profile"]').click();
     } else {
       alert('No se encontró información del usuario');

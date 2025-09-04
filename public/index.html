@@ -200,7 +200,7 @@
       <div id="profile-tab" class="tab-content">
         <div id="profile-inspector">
           <div class="inspector-header">
-            <h3>Perfil de <span id="inspector-username">Usuario</span></h3>
+            <h3>Perfil de <span id="inspector-header-username">Usuario</span></h3>
             <button id="close-inspector" class="close-btn">×</button>
           </div>
           
@@ -216,9 +216,10 @@
             <p><strong>Email:</strong> <span id="inspector-email">email@ejemplo.com</span></p>
             <p><strong>Mensajes enviados:</strong> <span id="inspector-messages">0</span></p>
             <p><strong>Última conexión:</strong> <span id="inspector-lastseen">Ahora</span></p>
-            <!-- AÑADIR ESTO: Línea para la descripción -->
-            <h3 id="inspector-username" style="text-align: center; margin: 10px 0; color: #2c3e50;">Usuario</h3>
-            <span id="inspector-bio">Bienvenido a EcoChat</span></p>
+            <!-- Nombre del usuario debajo del avatar -->
+            <h3 id="inspector-displayname" style="text-align: center; margin: 15px 0 10px 0; color: #2c3e50;">Usuario</h3>
+            <!-- Descripción sin etiqueta -->
+            <p id="inspector-bio" style="text-align: center; font-style: italic; color: #6c757d; margin: 0 0 15px 0;">Bienvenido a EcoChat</p>
           </div>
         </div>
       </div>
