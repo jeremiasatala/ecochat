@@ -319,6 +319,38 @@ app.post('/upload-cover', autenticar, uploadCover.single('cover'), async (req, r
   }
 });
 
+// Actualizar Instagram
+app.post('/set-instagram', autenticar, async (req, res) => {
+  try {
+    const { instagram } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    user.instagram = instagram;
+    await user.save();
+
+    res.json({ message: 'Instagram actualizado', instagram: user.instagram });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar Instagram' });
+  }
+});
+
+// Actualizar Twitter
+app.post('/set-twitter', autenticar, async (req, res) => {
+  try {
+    const { twitter } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+
+    user.twitter = twitter;
+    await user.save();
+
+    res.json({ message: 'Twitter actualizado', twitter: user.twitter });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar Twitter' });
+  }
+});
+
 // --- SOCKET.IO HANDLERS ---
 
 // Función para actualizar lista de usuarios

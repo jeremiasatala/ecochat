@@ -224,6 +224,106 @@ async function actualizarUsername() {
   }
 }
 
+// Función para actualizar Instagram
+async function actualizarInstagram() {
+  const nuevoInstagram = document.getElementById('editInstagram').value.trim();
+  if (!nuevoInstagram) return alert('El usuario de Instagram no puede estar vacío');
+  if (!token) return alert('Inicia sesión para editar tu Instagram');
+
+  try {
+    const res = await fetch('/set-instagram', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ instagram: nuevoInstagram })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      // Actualizar la interfaz
+      document.getElementById('instagram-username').textContent = '@' + nuevoInstagram;
+      document.getElementById('instagram-username').href = `https://instagram.com/${nuevoInstagram}`;
+      document.getElementById('instagram-link').classList.remove('hidden');
+      
+      // Actualizar localStorage
+      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+      updatedUser.instagram = nuevoInstagram;
+      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+      
+      // Emitir evento de actualización
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover,
+        bio: userBio,
+        instagram: nuevoInstagram,
+        twitter: userTwitter
+      });
+      
+      alert('Instagram actualizado correctamente');
+    } else {
+      alert(data.error || 'Error al actualizar Instagram');
+    }
+  } catch (err) {
+    console.error('Error actualizando Instagram:', err);
+    alert('Error al actualizar Instagram');
+  }
+}
+
+// Función para actualizar Twitter
+async function actualizarTwitter() {
+  const nuevoTwitter = document.getElementById('editTwitter').value.trim();
+  if (!nuevoTwitter) return alert('El usuario de Twitter no puede estar vacío');
+  if (!token) return alert('Inicia sesión para editar tu Twitter');
+
+  try {
+    const res = await fetch('/set-twitter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ twitter: nuevoTwitter })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      // Actualizar la interfaz
+      document.getElementById('twitter-username').textContent = '@' + nuevoTwitter;
+      document.getElementById('twitter-username').href = `https://twitter.com/${nuevoTwitter}`;
+      document.getElementById('twitter-link').classList.remove('hidden');
+      
+      // Actualizar localStorage
+      const updatedUser = JSON.parse(localStorage.getItem('ecochat_user') || '{}');
+      updatedUser.twitter = nuevoTwitter;
+      localStorage.setItem('ecochat_user', JSON.stringify(updatedUser));
+      
+      // Emitir evento de actualización
+      socket.emit('actualizar-estado', {
+        id: userId,
+        email: userEmail,
+        username,
+        avatar: userAvatar,
+        cover: userCover,
+        bio: userBio,
+        instagram: userInstagram,
+        twitter: nuevoTwitter
+      });
+      
+      alert('Twitter actualizado correctamente');
+    } else {
+      alert(data.error || 'Error al actualizar Twitter');
+    }
+  } catch (err) {
+    console.error('Error actualizando Twitter:', err);
+    alert('Error al actualizar Twitter');
+  }
+}
+
 
   // --- Event listeners ---
   showLoginBtn?.addEventListener('click', showLoginForm);
@@ -234,6 +334,8 @@ async function actualizarUsername() {
   cancelEditBtn?.addEventListener('click', hideProfileEdit);
   document.getElementById('guardarBioBtn')?.addEventListener('click', actualizarBio);
   document.getElementById('guardarUsernameBtn')?.addEventListener('click', actualizarUsername)
+  document.getElementById('guardarInstagramBtn')?.addEventListener('click', actualizarInstagram);
+  document.getElementById('guardarTwitterBtn')?.addEventListener('click', actualizarTwitter);
 
   // --- AUTO-LOGIN ---
   const savedToken = localStorage.getItem('ecochat_token');
@@ -269,6 +371,8 @@ async function actualizarUsername() {
       userAvatar = verifyData.avatar || 'assets/default-avatar.png';
       userCover = verifyData.cover || 'assets/default-cover.png';
       userBio = verifyData.bio || 'Bienvenido a EcoChat';
+      userInstagram = verifyData.instagram || '';
+      userTwitter = verifyData.twitter || '';
 
       authButtons.classList.add('hidden');
       authForms.classList.add('hidden');
@@ -281,6 +385,21 @@ async function actualizarUsername() {
       document.getElementById('bio').textContent = userBio;
       document.getElementById('editUsername').value = username || '';
       document.getElementById('editBioInput').value = userBio;
+      document.getElementById('editInstagram').value = userInstagram || '';
+      document.getElementById('editTwitter').value = userTwitter || '';
+
+      // Mostrar enlaces sociales si existen
+      if (userInstagram) {
+        document.getElementById('instagram-username').textContent = '@' + userInstagram;
+        document.getElementById('instagram-username').href = `https://instagram.com/${userInstagram}`;
+        document.getElementById('instagram-link').classList.remove('hidden');
+      }
+
+      if (userTwitter) {
+        document.getElementById('twitter-username').textContent = '@' + userTwitter;
+        document.getElementById('twitter-username').href = `https://twitter.com/${userTwitter}`;
+        document.getElementById('twitter-link').classList.remove('hidden');
+      }
 
       // ⭐⭐ NUEVO: Emitir evento de usuario autenticado
       socket.emit('user-authenticated', {
@@ -329,12 +448,15 @@ async function actualizarUsername() {
     document.getElementById('editUsername').value = '';
     document.getElementById('editBioInput').value = '';
     document.getElementById('bio').textContent = 'Bienvenido a EcoChat';
+    document.getElementById('instagram-link').classList.add('hidden');
+    document.getElementById('twitter-link').classList.add('hidden')
     
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('registerEmail').value = '';
     document.getElementById('registerPassword').value = '';
     document.getElementById('registerUsername').value = '';
+
     
     console.log('Sesión cerrada');
   }
@@ -583,6 +705,30 @@ async function actualizarUsername() {
       document.getElementById('inspector-lastseen').textContent = user.online ? 'En línea' : 'Desconectado';
   
       document.getElementById('inspector-bio').textContent = user.bio || 'Bienvenido a EcoChat';
+      // Mostrar Instagram si existe
+      if (user.instagram) {
+        document.getElementById('inspector-instagram-username').textContent = '@' + user.instagram;
+        document.getElementById('inspector-instagram-username').href = `https://instagram.com/${user.instagram}`;
+        document.getElementById('inspector-instagram-link').classList.remove('hidden');
+      } else {
+        document.getElementById('inspector-instagram-link').classList.add('hidden');
+      }
+
+      // Mostrar Twitter si existe
+      if (user.twitter) {
+        document.getElementById('inspector-twitter-username').textContent = '@' + user.twitter;
+        document.getElementById('inspector-twitter-username').href = `https://twitter.com/${user.twitter}`;
+        document.getElementById('inspector-twitter-link').classList.remove('hidden');
+      } else {
+        document.getElementById('inspector-twitter-link').classList.add('hidden');
+      }
+      }
+
+      if (userTwitter) {
+        document.getElementById('twitter-username').textContent = '@' + userTwitter;
+        document.getElementById('twitter-username').href = `https://twitter.com/${userTwitter}`;
+        document.getElementById('twitter-link').classList.remove('hidden');
+      }
   
       document.querySelector('[data-tab="profile"]').click();
     } else {

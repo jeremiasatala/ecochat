@@ -452,3 +452,33 @@ html { font-family: arial, sans-serif; }
     font-size: 15px;
   }
 }
+
+/* ===== ESTILOS PARA ENLACES SOCIALES ===== */
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  padding: 6px 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background: #e9ecef;
+  transform: translateX(3px);
+}
+
+.social-link a:hover {
+  color: #007bff !important;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .social-link {
+    padding: 5px 8px;
+    font-size: 14px;
+  }
+}
+

@@ -7,7 +7,9 @@ const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, sparse: true },
   avatar: { type: String, default: '/assets/default-avatar.png' },
   cover: { type: String, default: '/assets/default-cover.png' },
-  bio: { type: String, default: 'Bienvenido a EcoChat' } 
+  bio: { type: String, default: 'Bienvenido a EcoChat' },
+  instagram: { type: String, default: '' },
+  twitter: { type: String, default: '' }
 });
 
 

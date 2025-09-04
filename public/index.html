@@ -31,11 +31,23 @@
             <h3 id="usernameDisplay">Invitado</h3>
             <p id="bio">Bienvenido a EcoChat</p>
             <p class="stats">Mensajes enviados: <span id="messageCount">0</span></p>
+
+            <!-- Redes sociales en el perfil propio -->
+            <div id="social-links">
+              <div id="instagram-link" class="social-link hidden">
+                <span style="font-weight: bold;">📷</span>
+                <a id="instagram-username" href="#" target="_blank" style="color: #6c757d; text-decoration: none; font-weight: bold;">@usuario</a>
+              </div>
+              <div id="twitter-link" class="social-link hidden">
+                <span style="font-weight: bold;">🐦</span>
+                <a id="twitter-username" href="#" target="_blank" style="color: #6c757d; text-decoration: none; font-weight: bold;">@usuario</a>
+              </div>
+            </div>
             
             <!-- Botones de auth (visibles cuando no logueado) -->
             <div id="auth-buttons">
               <button id="showLoginBtn" class="btn-modern btn-primary-modern">
-                <span>🔑</span> niciar Sesión
+                <span>🔑</span> Iniciar Sesión
               </button>
               <button id="showRegisterBtn" class="btn-modern btn-outline-modern" style="margin-top: 10px;">
                 <span>📝</span> Registrarse
@@ -130,6 +142,25 @@
               <label class="input-label">Descripción de perfil</label>
             </div>
 
+            <!-- Campos para redes sociales en el panel de edición -->
+            <div class="input-group-modern">
+              <input id="editInstagram" type="text" class="input-modern" placeholder=" ">
+              <label class="input-label">Usuario de Instagram</label>
+            </div>
+
+            <button id="guardarInstagramBtn" class="btn-modern btn-primary-modern">
+              <span>📷</span> Guardar Instagram
+            </button>
+
+            <div class="input-group-modern">
+              <input id="editTwitter" type="text" class="input-modern" placeholder=" ">
+              <label class="input-label">Usuario de Twitter</label>
+            </div>
+
+            <button id="guardarTwitterBtn" class="btn-modern btn-primary-modern">
+              <span>🐦</span> Guardar Twitter
+            </button>
+
             <!-- Avatar Upload Moderno -->
             <div class="upload-modern" onclick="document.getElementById('avatar').click()">
               <div class="upload-icon">📁</div>
@@ -220,6 +251,17 @@
             <h3 id="inspector-displayname" style="text-align: center; margin: 15px 0 10px 0; color: #2c3e50;">Usuario</h3>
             <!-- Descripción sin etiqueta -->
             <p id="inspector-bio" style="text-align: center; font-style: italic; color: #6c757d; margin: 0 0 15px 0;">Bienvenido a EcoChat</p>
+            <!-- Redes sociales en el inspector de perfil -->
+            <div id="inspector-social-links">
+              <div id="inspector-instagram-link" class="social-link hidden">
+                <span style="font-weight: bold;">📷</span>
+                <a id="inspector-instagram-username" href="#" target="_blank" style="color: #6c757d; text-decoration: none; font-weight: bold;">@usuario</a>
+              </div>
+              <div id="inspector-twitter-link" class="social-link hidden">
+                <span style="font-weight: bold;">🐦</span>
+                <a id="inspector-twitter-username" href="#" target="_blank" style="color: #6c757d; text-decoration: none; font-weight: bold;">@usuario</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
